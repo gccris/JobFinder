@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String?
+  password  String
+  role      UserRole   @default(USER)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  savedJobs SavedJob[]
+
+  @@map("users")
+}
+
+model Job {
+  id          String     @id @default(cuid())
+  title       String
+  description String
+  company     String
+  location    String
+  salary      String?
+  source      String     // "linkedin", "indeed", "custom"
+  externalId  String     // External ID from source
+  url         String
+  category    JobCategory
+  tags        String[]   @default([])
+  postedAt    DateTime
+  expiresAt   DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  savedByUsers SavedJob[]
+
+  @@unique([source, externalId])
+  @@index([category])
+  @@index([source])
+  @@index([postedAt])
+  @@map("jobs")
+}
+
+model SavedJob {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  savedAt   DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@index([userId])
+  @@map("saved_jobs")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum JobCategory {
+  BACKEND
+  FRONTEND
+  FULLSTACK
+  DEVOPS
+  DATASCIENCE
+  PRODUCT
+}
