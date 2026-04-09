@@ -1,30 +1,57 @@
-# JobHub - Guia de Setup e Deployment
+# JobHub - Guia Completo de Setup
 
-## 🚀 Visão Geral
+## 🚀 Opção 1: Setup com Docker (RECOMENDADO) ⭐
 
-JobHub é um site agregador de vagas de emprego em tecnologia que integra múltiplas APIs (LinkedIn, Indeed, customizadas) em uma base de dados centralizada com autenticação de usuários e roles de admin.
+### Pré-requisitos:
+- Docker Desktop instalado
+- Docker Compose
 
-## 📋 Estrutura do Projeto
+### Passos:
 
-```
-job-aggregator/
-├── app/
-│   ├── api/                 # API Routes (Next.js)
-│   ├── page.tsx            # Home page
-│   ├── login/              # Login page
-│   ├── register/           # Registro
-│   └── jobs/               # Listagem e detalhes de vagas
-├── lib/
-│   ├── auth.ts            # NextAuth config
-│   ├── db.ts              # Prisma singleton
-│   ├── sync-jobs.ts       # Lógica de sincronização
-│   └── scrapers/          # Scrapers (LinkedIn, Indeed)
-├── prisma/
-│   └── schema.prisma      # Schema do banco
-└── middleware.ts          # Proteção de rotas
+```bash
+# 1. Entre no diretório
+cd job-aggregator
+
+# 2. Inicie tudo com um comando
+docker-compose up --build
 ```
 
-## 🔧 Setup Local
+Isso vai:
+- ✅ Criar a imagem do Next.js
+- ✅ Iniciar PostgreSQL automaticamente
+- ✅ Instalar todas as dependências
+- ✅ Rodar migrations
+- ✅ Iniciar o servidor de desenvolvimento
+
+### 3. Acesse
+```
+http://localhost:3000
+```
+
+### Comandos úteis com Docker:
+
+```bash
+# Ver logs em tempo real
+docker-compose logs -f app
+
+# Rodar migrations
+docker-compose exec app npm run prisma:migrate
+
+# Acessar o Prisma Studio (UI do banco)
+docker-compose exec app npm run prisma:studio
+
+# Parar os containers
+docker-compose down
+
+# Reconstruir (se mudar dependências)
+docker-compose up --build
+```
+
+---
+
+## 🔧 Opção 2: Setup Local (Sem Docker)
+
+Se você preferir não usar Docker, siga os passos abaixo:
 
 ### 1. Clonar e Instalar Dependências
 
@@ -37,7 +64,7 @@ npm install
 
 Você pode usar:
 - **Local**: PostgreSQL instalado localmente
-- **Docker**: `docker run -e POSTGRES_PASSWORD=password -p 5432:5432 postgres`
+- **Docker só do DB**: `docker run -e POSTGRES_PASSWORD=password -p 5432:5432 postgres`
 - **Cloud**: Supabase, Railway, Render
 
 Crie um banco de dados:
@@ -85,6 +112,32 @@ npm run dev
 
 Acesse: http://localhost:3000
 
+---
+
+## 📋 Estrutura do Projeto
+
+```
+job-aggregator/
+├── app/
+│   ├── api/                 # API Routes (Next.js)
+│   ├── page.tsx            # Home page
+│   ├── login/              # Login page
+│   ├── register/           # Registro
+│   └── jobs/               # Listagem e detalhes de vagas
+├── lib/
+│   ├── auth.ts            # NextAuth config
+│   ├── db.ts              # Prisma singleton
+│   ├── sync-jobs.ts       # Lógica de sincronização
+│   └── scrapers/          # Scrapers (LinkedIn, Indeed)
+├── prisma/
+│   └── schema.prisma      # Schema do banco
+├── Dockerfile             # Configuração Docker
+├── docker-compose.yml     # Orquestração Docker
+└── middleware.ts          # Proteção de rotas
+```
+
+---
+
 ## 📝 Funcionalidades Principais
 
 ### Para Usuários
@@ -106,9 +159,28 @@ Acesse: http://localhost:3000
 - 🔄 Deduplicação automática por source + externalId
 - 🔄 Suporte a LinkedIn, Indeed e APIs customizadas
 
+---
+
 ## 🌐 Deployment
 
-### Option 1: Vercel (Recomendado para Next.js)
+### Option 1: Docker + VPS
+
+```bash
+# Build da imagem
+docker build -t job-aggregator .
+
+# Rodar container
+docker run \
+  -e DATABASE_URL="postgresql://..." \
+  -e NEXTAUTH_SECRET="..." \
+  -e NEXTAUTH_URL="https://seu-dominio.com" \
+  -p 3000:3000 \
+  job-aggregator
+```
+
+Ou use `docker-compose.yml` em produção (mais recomendado).
+
+### Option 2: Vercel (Recomendado para Next.js)
 
 ```bash
 # 1. Push para GitHub
@@ -123,7 +195,7 @@ vercel
 # 4. Deploy automático
 ```
 
-### Option 2: Railway/Render
+### Option 3: Railway/Render
 
 1. **PostgreSQL**:
    - Railway: Criar database PostgreSQL
@@ -141,29 +213,7 @@ vercel
    NODE_ENV=production
    ```
 
-### Option 3: Docker + VPS
-
-```dockerfile
-FROM node:18-alpine
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci --only=production
-
-COPY . .
-
-RUN npx prisma generate
-
-EXPOSE 3000
-
-CMD ["npm", "start"]
-```
-
-```bash
-docker build -t job-aggregator .
-docker run -e DATABASE_URL=... -p 3000:3000 job-aggregator
-```
+---
 
 ## 📊 Modelos de Dados
 
@@ -206,6 +256,8 @@ savedAt: DateTime
 unique: (userId, jobId)
 ```
 
+---
+
 ## 🔌 Integração com APIs
 
 ### LinkedIn
@@ -236,6 +288,8 @@ unique: (userId, jobId)
 ]
 ```
 
+---
+
 ## 🛠️ Próximos Passos / Melhorias
 
 - [ ] Implementar scraping real de Indeed (puppeteer)
@@ -248,9 +302,29 @@ unique: (userId, jobId)
 - [ ] Sistema de aplicações (salvar + enviar para plataforma)
 - [ ] Admin panel com UI (não apenas APIs)
 
+---
+
 ## 🐛 Troubleshooting
 
-### Erro de conexão com banco
+### Com Docker:
+
+**Erro de porta já em uso:**
+```bash
+# Mudar portas no docker-compose.yml
+ports:
+  - "3001:3000"  # Host:Container
+  - "5433:5432"  # Host:Container
+```
+
+**Rebuild completo:**
+```bash
+docker-compose down -v  # Remove volumes também
+docker-compose up --build
+```
+
+### Setup Local:
+
+**Erro de conexão com banco:**
 ```bash
 # Verificar DATABASE_URL
 echo $DATABASE_URL
@@ -259,23 +333,27 @@ echo $DATABASE_URL
 npx prisma db execute --stdin < /dev/null
 ```
 
-### Erro de autenticação
+**Erro de autenticação:**
 - Verificar NEXTAUTH_SECRET está definido
 - Verificar NEXTAUTH_URL está correto
 - Limpar cookies do navegador
 
-### Migrations travadas
+**Migrations travadas:**
 ```bash
 npx prisma migrate resolve --rolled-back
 npx prisma migrate dev
 ```
 
+---
+
 ## 📞 Contato / Suporte
 
 Para problemas:
-1. Verificar logs: `npx prisma studio`
+1. Verificar logs: `docker-compose logs app` ou `npx prisma studio`
 2. Verificar browser console para erros no frontend
 3. Verificar servidor Node para erros do backend
+
+---
 
 ## 📜 Licença
 

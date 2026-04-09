@@ -17,20 +17,20 @@
     "axios": "^1.15.0",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.1",
-    "next": "16.2.3",
+    "next": "14.2.35",
     "next-auth": "^5.0.0-beta.18",
     "node-cron": "^4.2.1",
     "prisma": "^5.18.0",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.3",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.35",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

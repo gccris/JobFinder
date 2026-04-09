@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import BackButton from "@/app/components/back-button";
 
 interface Job {
   id: string;
@@ -63,17 +64,25 @@ export default function JobsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-8">Vagas de Emprego</h1>
+    <div style={{ backgroundColor: "var(--background)", minHeight: "100vh" }}>
+      <div className="container" style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem 1.5rem" }}>
+        <BackButton label="← Voltar" />
+        <h1 style={{ fontSize: "2rem", fontWeight: "700", marginBottom: "2rem" }}>
+          🔍 Vagas de Emprego
+        </h1>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h2 className="text-lg font-bold mb-4">Filtros</h2>
+        <div className="card" style={{ marginBottom: "2rem" }}>
+          <h2 style={{ fontSize: "1.125rem", fontWeight: "600", marginBottom: "1rem" }}>Filtros</h2>
 
-          <div className="grid md:grid-cols-4 gap-4">
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: "1rem",
+            marginBottom: "1rem"
+          }}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "500" }}>
                 Buscar
               </label>
               <input
@@ -81,18 +90,16 @@ export default function JobsPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Título, empresa..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "500" }}>
                 Categoria
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Todas</option>
                 <option value="BACKEND">Backend</option>
@@ -105,7 +112,7 @@ export default function JobsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "500" }}>
                 Localização
               </label>
               <input
@@ -113,22 +120,23 @@ export default function JobsPage() {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="Cidade, remoto..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
-            <div className="flex items-end gap-2">
+            <div style={{ display: "flex", alignItems: "flex-end", gap: "0.5rem" }}>
               <button
                 onClick={() => setPage(1)}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                className="btn-primary"
+                style={{ flex: 1 }}
               >
-                Buscar
+                🔎 Buscar
               </button>
               <button
                 onClick={handleReset}
-                className="flex-1 bg-gray-300 text-gray-800 py-2 rounded-lg hover:bg-gray-400"
+                className="btn-secondary"
+                style={{ flex: 1 }}
               >
-                Limpar
+                ✕ Limpar
               </button>
             </div>
           </div>
@@ -136,73 +144,90 @@ export default function JobsPage() {
 
         {/* Jobs List */}
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">Carregando vagas...</p>
+          <div style={{ textAlign: "center", padding: "3rem" }}>
+            <div className="loading" style={{ margin: "0 auto", marginBottom: "1rem" }} />
+            <p style={{ color: "var(--text-secondary)" }}>Carregando vagas...</p>
           </div>
         ) : jobs.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-            <p className="text-gray-600 mb-4">Nenhuma vaga encontrada</p>
+          <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
+            <p style={{ color: "var(--text-secondary)", marginBottom: "1rem" }}>
+              ❌ Nenhuma vaga encontrada
+            </p>
             <button
               onClick={handleReset}
-              className="text-blue-600 hover:underline"
+              className="btn-primary"
             >
               Limpar filtros
             </button>
           </div>
         ) : (
           <>
-            <div className="space-y-4 mb-8">
+            <div style={{ display: "grid", gap: "1rem", marginBottom: "2rem" }}>
               {jobs.map((job) => (
                 <Link
                   key={job.id}
                   href={`/jobs/${job.id}`}
-                  className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
+                  className="job-card"
+                  style={{ display: "block", textDecoration: "none" }}
                 >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900">
-                        {job.title}
-                      </h3>
-                      <p className="text-sm text-gray-600">{job.company}</p>
-                      <p className="text-sm text-gray-500">{job.location}</p>
+                  <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: "1rem"
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <h3 className="job-title">{job.title}</h3>
+                      <p className="job-company">{job.company}</p>
+                      <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
+                        📍 {job.location}
+                      </p>
                     </div>
-                    <div className="text-right">
+                    <div style={{ textAlign: "right" }}>
                       {job.salary && (
-                        <p className="text-lg font-semibold text-green-600">
-                          {job.salary}
+                        <p className="job-salary" style={{ marginBottom: "0.5rem" }}>
+                          💰 {job.salary}
                         </p>
                       )}
-                      <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
-                        {job.category}
-                      </span>
+                      <span className="badge badge-primary">{job.category}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-400 mt-2">
-                    {new Date(job.postedAt).toLocaleDateString("pt-BR")}
+                  <p style={{
+                    fontSize: "0.75rem",
+                    color: "var(--text-secondary)",
+                    marginTop: "0.5rem"
+                  }}>
+                    📅 {new Date(job.postedAt).toLocaleDateString("pt-BR")}
                   </p>
                 </Link>
               ))}
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-between items-center">
-              <p className="text-gray-600">
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "1rem",
+              flexWrap: "wrap"
+            }}>
+              <p style={{ color: "var(--text-secondary)" }}>
                 Mostrando {jobs.length} de {total} vagas
               </p>
-              <div className="flex gap-2">
+              <div style={{ display: "flex", gap: "0.5rem" }}>
                 <button
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                  className="btn-secondary"
                 >
-                  Anterior
+                  ← Anterior
                 </button>
                 <button
                   onClick={() => setPage(page + 1)}
                   disabled={page * limit >= total}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                  className="btn-secondary"
                 >
-                  Próxima
+                  Próxima →
                 </button>
               </div>
             </div>

@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JobHub - Agregador de Vagas de Emprego
 
-## Getting Started
+Um site que agrega anúncios de emprego de múltiplas APIs (LinkedIn, Indeed, customizadas) em uma base de dados centralizada com autenticação de usuários e sistema de admin.
 
-First, run the development server:
+## 🚀 Quick Start (Com Docker)
 
+### Pré-requisitos:
+- Docker Desktop instalado
+- Docker Compose
+
+### 1. Inicie tudo:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker-compose up --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Acesse:
+```
+http://localhost:3000
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Pronto! ✨ Sem conflitos de versão, sem problemas de setup.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📚 Documentação Completa
 
-To learn more about Next.js, take a look at the following resources:
+Para todos os detalhes de configuração, estrutura do projeto e deployment:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**→ Veja [`SETUP.md`](./SETUP.md)**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🔑 Funcionalidades Principais
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Para Usuários
+- ✅ Cadastro e login com email/senha
+- ✅ Buscar vagas com filtros
+- ✅ Salvar vagas favoritas
+- ✅ Dashboard pessoal
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Para Admin
+- ✅ Sincronização de vagas
+- ✅ Gestão de vagas
+- ✅ Analytics e estatísticas
+
+---
+
+## 📊 Tech Stack
+
+- **Frontend**: Next.js 14 + React 18 + TypeScript
+- **Backend**: Next.js API Routes
+- **Database**: PostgreSQL
+- **Auth**: NextAuth.js
+- **Styling**: Tailwind CSS
+- **ORM**: Prisma
+- **Deployment**: Docker + Docker Compose
+
+---
+
+## 🛠️ Mais informações
+
+- [Guia de Setup Completo](./SETUP.md)
+- [Configuração com Docker](./DOCKER-SETUP.md)

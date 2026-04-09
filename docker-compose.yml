@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: job_db
+    environment:
+      POSTGRES_USER: jobuser
+      POSTGRES_PASSWORD: jobpass123
+      POSTGRES_DB: job_aggregator
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobuser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - job_network
+
+  app:
+    build: .
+    container_name: job_app
+    environment:
+      DATABASE_URL: "postgresql://jobuser:jobpass123@db:5432/job_aggregator"
+      NEXTAUTH_SECRET: "your-secret-key-change-this-in-production"
+      NEXTAUTH_URL: "http://localhost:3000"
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - job_network
+
+volumes:
+  postgres_data:
+
+networks:
+  job_network:
+    driver: bridge
