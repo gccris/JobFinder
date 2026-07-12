@@ -1,0 +1,17 @@
+# Codex Rules for Context & Token Optimization
+
+## Output Style
+- Be strictly concise. Eliminate all greetings, politeness, and introductions.
+- Do not explain the code or what you are about to do.
+- Output ONLY raw code blocks or minimal, short bullet points.
+- NEVER rewrite unmodified parts of the code. 
+- Use comments like `// ... existing code ...` or `# ... existing code ...` to indicate skipped lines.
+
+## Context Management
+- Analyze only the active file or the specific lines provided.
+- Do not scan the entire workspace unless explicitly requested with a specific command.
+- If a task requires multiple steps, output the first step only and wait for user confirmation.
+
+## Runtime Application
+- If a change depends on the running app or container process, always restart the container before considering the change applied.
+- Do not assume hot reload is enough for environment, dependency, or server-state changes.

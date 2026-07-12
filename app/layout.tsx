@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "./components/navbar";
+import AuthSessionProvider from "./components/session-provider";
 
 export const metadata: Metadata = {
   title: "JobHub - Agregador de Vagas",
@@ -15,10 +16,12 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="h-full antialiased">
       <body className="min-h-full flex flex-col" style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-        <Navbar />
-        <main style={{ flex: 1 }}>
-          {children}
-        </main>
+        <AuthSessionProvider>
+          <Navbar />
+          <main style={{ flex: 1 }}>
+            {children}
+          </main>
+        </AuthSessionProvider>
         <footer style={{
           backgroundColor: "var(--surface)",
           borderTop: "1px solid var(--border)",

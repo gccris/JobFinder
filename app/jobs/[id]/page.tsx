@@ -1,207 +1,74 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useSession } from "next-auth/react";
 
-interface Job {
-  id: string;
-  title: string;
-  description: string;
-  company: string;
-  location: string;
-  salary?: string;
-  category: string;
-  tags: string[];
-  postedAt: string;
-  url: string;
-  source: string;
-}
+type Job = {
+  id: string; title: string; company: string; location: string; description: string; requirements?: string | null;
+  salary?: string | null; category: string; workplaceType: string; employmentType?: string | null; seniority?: string | null;
+  department?: string | null; tags: string[]; applicationUrl?: string | null; url: string; postedAt: string;
+  status: "OPEN" | "CLOSED"; saved: boolean; applicationStatus?: string | null; canDelete: boolean;
+};
 
-export default function JobDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+const statusLabels: Record<string, string> = { APPLIED: "Aplicado", INTERVIEWING: "Em entrevistas", REJECTED: "Rejeitado", APPROVED: "Aprovado" };
+
+export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saved, setSaved] = useState(false);
-  const [savingJob, setSavingJob] = useState(false);
-  const { data: session } = useSession();
+  const [busy, setBusy] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchJob();
-  }, [params.id]);
+  async function load() {
+    const response = await fetch(`/api/jobs/${params.id}`);
+    if (response.ok) setJob(await response.json());
+    setLoading(false);
+  }
+  useEffect(() => { load(); }, [params.id]);
 
-  const fetchJob = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/jobs/${params.id}`);
-      const data = await res.json();
-      setJob(data);
-
-      // Check if saved
-      if (session?.user) {
-        checkIfSaved();
-      }
-    } catch (error) {
-      console.error("Error fetching job:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const checkIfSaved = async () => {
-    try {
-      const res = await fetch(`/api/jobs/${params.id}/saved`);
-      if (res.ok) {
-        setSaved(true);
-      }
-    } catch (error) {
-      console.error("Error checking saved status:", error);
-    }
-  };
-
-  const handleSaveJob = async () => {
-    if (!session?.user) {
-      router.push("/login");
-      return;
-    }
-
-    try {
-      setSavingJob(true);
-
-      if (saved) {
-        await fetch(`/api/jobs/${params.id}/save`, {
-          method: "DELETE",
-        });
-        setSaved(false);
-      } else {
-        await fetch(`/api/jobs/${params.id}/save`, {
-          method: "POST",
-        });
-        setSaved(true);
-      }
-    } catch (error) {
-      console.error("Error toggling saved job:", error);
-    } finally {
-      setSavingJob(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Carregando vaga...</p>
-      </div>
-    );
+  async function toggleSaved() {
+    if (!job) return; setBusy(true);
+    const response = await fetch(`/api/jobs/${job.id}/save`, { method: job.saved ? "DELETE" : "POST" });
+    if (response.status === 401) router.push("/login"); else if (response.ok) await load();
+    setBusy(false);
   }
 
-  if (!job) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">Vaga não encontrada</p>
-          <Link href="/jobs" className="text-blue-600 hover:underline">
-            Voltar para vagas
-          </Link>
-        </div>
-      </div>
-    );
+  async function openApplication() {
+    if (!job) return;
+    const popup = window.open("", "_blank");
+    if (popup) popup.opener = null;
+    if (!job.saved) await fetch(`/api/jobs/${job.id}/save`, { method: "POST" });
+    if (popup) popup.location.href = job.applicationUrl || job.url;
+    else window.open(job.applicationUrl || job.url, "_blank", "noopener,noreferrer");
+    await load();
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <Link href="/jobs" className="text-blue-600 hover:underline mb-6 inline-block">
-          ← Voltar
-        </Link>
+  async function markApplied() {
+    if (!job) return; setBusy(true);
+    const response = await fetch(`/api/jobs/${job.id}/application`, { method: "POST" });
+    if (response.status === 401) router.push("/login"); else if (response.ok) await load();
+    setBusy(false);
+  }
 
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {job.title}
-              </h1>
-              <p className="text-xl text-gray-600">{job.company}</p>
-            </div>
-            <button
-              onClick={handleSaveJob}
-              disabled={savingJob}
-              className={`px-6 py-2 rounded-lg font-semibold transition ${
-                saved
-                  ? "bg-red-600 text-white hover:bg-red-700"
-                  : "bg-blue-600 text-white hover:bg-blue-700"
-              }`}
-            >
-              {saved ? "Remover dos Favoritos" : "Salvar"}
-            </button>
-          </div>
+  async function deleteJob() {
+    if (!job || !confirm("Excluir esta vaga e todos os favoritos, candidaturas e históricos associados?")) return;
+    const response = await fetch(`/api/jobs/${job.id}`, { method: "DELETE" });
+    if (response.ok) router.push("/jobs");
+  }
 
-          <div className="grid md:grid-cols-3 gap-4 mb-8 p-4 bg-gray-50 rounded-lg">
-            <div>
-              <p className="text-sm text-gray-600">Localização</p>
-              <p className="font-semibold text-gray-900">{job.location}</p>
-            </div>
-            {job.salary && (
-              <div>
-                <p className="text-sm text-gray-600">Salário</p>
-                <p className="font-semibold text-gray-900">{job.salary}</p>
-              </div>
-            )}
-            <div>
-              <p className="text-sm text-gray-600">Categoria</p>
-              <p className="font-semibold text-gray-900">{job.category}</p>
-            </div>
-          </div>
+  if (loading) return <div className="container" style={{ padding: "3rem 1.5rem" }}>Carregando vaga...</div>;
+  if (!job) return <div className="container" style={{ padding: "3rem 1.5rem" }}>Vaga não encontrada.</div>;
 
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">
-              Descrição
-            </h2>
-            <div className="prose prose-sm max-w-none">
-              <p className="text-gray-700 whitespace-pre-wrap">
-                {job.description}
-              </p>
-            </div>
-          </div>
-
-          {job.tags && job.tags.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-lg font-bold mb-4 text-gray-900">Tags</h2>
-              <div className="flex flex-wrap gap-2">
-                {job.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="border-t pt-8">
-            <p className="text-sm text-gray-600 mb-4">
-              Postado em: {new Date(job.postedAt).toLocaleDateString("pt-BR")}
-            </p>
-            <p className="text-sm text-gray-600 mb-4">
-              Fonte: <strong>{job.source}</strong>
-            </p>
-            <a
-              href={job.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-semibold"
-            >
-              Candidatar-se →
-            </a>
-          </div>
-        </div>
+  return <div style={{ background: "var(--background)", minHeight: "100vh", padding: "2rem 1rem" }}><main className="container" style={{ maxWidth: 950, margin: "0 auto" }}>
+    <Link href="/jobs" style={{ color: "var(--primary)" }}>← Voltar para vagas</Link>
+    <article className="card" style={{ marginTop: 20, padding: 28 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}><div><div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}><h1 style={{ fontSize: "2rem", fontWeight: 700 }}>{job.title}</h1>{job.status === "CLOSED" && <span className="badge" style={{ background: "#fee2e2", color: "#991b1b" }}>Fechada</span>}</div><p style={{ fontSize: "1.2rem", color: "var(--text-secondary)" }}>{job.company} · {job.location}</p></div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><button className="btn-secondary" disabled={busy} onClick={toggleSaved}>{job.saved ? "★ Remover dos salvos" : "☆ Salvar"}</button><button className="btn-primary" disabled={busy || Boolean(job.applicationStatus)} onClick={markApplied}>{job.applicationStatus ? `✓ ${statusLabels[job.applicationStatus]}` : "Marcar como aplicado"}</button></div>
       </div>
-    </div>
-  );
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "20px 0" }}>{[job.category, job.workplaceType, job.employmentType, job.seniority, job.department].filter(Boolean).map((value) => <span className="tag" key={value}>{value}</span>)}</div>
+      <section><h2 style={{ fontSize: "1.35rem", fontWeight: 700, marginBottom: 10 }}>Descrição</h2><p style={{ whiteSpace: "pre-wrap" }}>{job.description}</p></section>
+      {job.requirements && <section style={{ marginTop: 24 }}><h2 style={{ fontSize: "1.35rem", fontWeight: 700, marginBottom: 10 }}>Requisitos</h2><p style={{ whiteSpace: "pre-wrap" }}>{job.requirements}</p></section>}
+      <div style={{ borderTop: "1px solid var(--border)", marginTop: 28, paddingTop: 20, display: "flex", gap: 10, flexWrap: "wrap" }}><button className="btn-primary" onClick={openApplication}>Abrir candidatura ↗</button>{job.canDelete && <button className="btn-danger" onClick={deleteJob}>Excluir vaga</button>}</div>
+    </article>
+  </main></div>;
 }

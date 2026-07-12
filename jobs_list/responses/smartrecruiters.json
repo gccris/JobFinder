@@ -1,0 +1,158 @@
+{
+    "Provider": "Smartrecruiters",
+    "offset": "0",
+    "limit": "100",
+    "totalFound": "47",
+    "jobs": [
+        {
+            "id": "107099725",
+            "uuid": "5f4727d2-0078-4099-b072-a81dba76a99e",
+            "name": "Quality Assurance Manager",
+            "refNumber": "REF328V",
+            "status": "Pending",
+            "jobAdUrl": "https://www.smartrecruiters.com/SmartRecruiters/12308096-quality-assurance-manager",
+            "applyUrl": "https://www.smartrecruiters.com/Skechers1/12308096-quality-assurance-manager",
+            "postedDate": "2015-10-02T00:20:08.000Z",
+            "location": {
+                "city": "Manhattan Beach",
+                "region": "California",
+                "regionCode": "CA",
+                "country": "United States",
+                "countryCode": "us",
+                "longitude": "-118.41090889999998",
+                "latitude": "33.8847361"
+            },
+            "company": {
+                "cid": "5ffeacd689ced0227c3447a9",
+                "name": "SmartRecruiters",
+                "identifier": "smartrecruiters"
+            },
+            "creator": {
+                "firstName": "John",
+                "lastName": "Doe",
+                "email": "johndoe@smartrecruiters.com"
+            },
+            "compensation": {},
+            "industry": {
+                "id": "retail",
+                "label": "Retail"
+            },
+            "function": {
+                "id": "production",
+                "label": "Production"
+            },
+            "experienceLevel": {
+                "id": "mid_senior_level",
+                "label": "Mid-Senior Level"
+            },
+            "typeOfEmployment": {},
+            "jobAd": {
+                "companyDescription": "&lt;p&gt;Example company description with html tags&lt;/p&gt;",
+                "jobDescription": "&lt;p&gt;Example job description with html tags&lt;/p&gt;",
+                "qualifications": "&lt;p&gt;Example qualifications with html tags&lt;/p&gt;",
+                "additionalInformation": "&lt;p&gt;Example additional information with html tags&lt;/p&gt;"
+            }
+        },
+        {
+            "id": "107099726",
+            "uuid": "0552caa6-96df-40c6-8c9d-642c7ef67a1c",
+            "name": "Maintenance Mechanic",
+            "refNumber": "REF27S",
+            "status": "Pending",
+            "jobAdUrl": "https://www.smartrecruiters.com/AcmeCorp/12300233-maintenance-mechanic",
+            "applyUrl": "https://www.smartrecruiters.com/AcmeCorp/12300233-maintenance-mechanic",
+            "postedDate": "2015-10-01T19:45:27.000Z",
+            "location": {
+                "city": "Fort Worth",
+                "region": "Texas",
+                "regionCode": "TX",
+                "country": "United States",
+                "countryCode": "us",
+                "longitude": "-97.3307658",
+                "latitude": "32.7554883"
+            },
+            "company": {
+                "cid": "5ffead3128a14a06784fbf66",
+                "name": "Acme Corp",
+                "identifier": "acmeCorp"
+            },
+            "creator": {
+                "firstName": "Jane",
+                "lastName": "Doe",
+                "email": "j.d@acmecorp.com"
+            },
+            "compensation": {},
+            "industry": {
+                "id": "food_production",
+                "label": "Food Production"
+            },
+            "function": {
+                "id": "other",
+                "label": "Other"
+            },
+            "experienceLevel": {
+                "id": "mid_senior_level",
+                "label": "Mid-Senior Level"
+            },
+            "typeOfEmployment": {
+                "id": "permanent",
+                "label": "Full-time"
+            },
+            "jobAd": {
+                "companyDescription": "&lt;p&gt;Example company description with html tags&lt;/p&gt;",
+                "jobDescription": "&lt;p&gt;Example job description with html tags&lt;/p&gt;",
+                "qualifications": "&lt;p&gt;Example qualifications with html tags&lt;/p&gt;",
+                "additionalInformation": "&lt;p&gt;Example additional information with html tags&lt;/p&gt;"
+ 
+            }
+        }
+    ]
+}
+{
+    "limit": 100,
+    "offset": 0,
+    "totalFound": 1,
+    "content": [
+        {
+            "id": "44339b55e4b00655426eb029",
+            "createDate": "2015-08-18T20:53:41.420+0000",
+            "lastUpdateDate": "2015-08-18T21:19:37.033+0000",
+            "name": "30 Day Job Posting",
+            "description": "This is an example offer description that is visible in the SmartRecruiters Marketplace",
+            "terms": {
+                "price": {
+                    "amount": 150,
+                    "currencyCode": "USD"
+                },
+                "postingPeriod": 30,
+                "existingContract": {
+                      "password": "pass",
+                      "login": "login"
+                }
+            },
+            "status": "ACTIVE",
+            "targetMarket": {
+                "industries": [],
+                "functions": [],
+                "experienceLevels": [],
+                "locations": [
+                    {
+                        "country": "United States"
+                    }
+                ]
+            },
+            "availability": {
+                "industries": [],
+                "locations": [
+                    {
+                        "country": "United States"
+                    }
+                ],
+                "companies": [
+                    "SmartRecr",
+                    "Donnie Company ABC"
+                ]
+            }
+        }
+    ]
+}

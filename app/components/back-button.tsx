@@ -11,7 +11,7 @@ export default function BackButton({ label = "← Voltar" }: { label?: string })
       className="btn-secondary"
       style={{
         marginBottom: "1.5rem",
-        padding: "0.625rem 1.25rem"
+        padding: "0.625rem 1.25rem",
       }}
     >
       {label}

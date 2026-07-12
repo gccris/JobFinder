@@ -1,6 +1,7 @@
 import { scrapeIndeed } from "./scrapers/indeed";
 import { scrapeLinkedIn } from "./scrapers/linkedin";
 import { db } from "./db";
+import { buildJobSignals, buildJobSignalsUpdate } from "./job-signals/persist";
 
 export async function syncAllJobs() {
   try {
@@ -50,10 +51,32 @@ export async function syncAllJobs() {
               updatedAt: new Date(),
             },
           });
+          await db.jobSignals.upsert({
+            where: { jobId: existing.id },
+            update: buildJobSignalsUpdate({
+              title: job.title,
+              description: job.description,
+              tags: job.tags ?? [],
+            }),
+            create: buildJobSignals({
+              jobId: existing.id,
+              title: job.title,
+              description: job.description,
+              tags: job.tags ?? [],
+            }),
+          });
           updated++;
         } else {
-          await db.job.create({
+          const createdJob = await db.job.create({
             data: job,
+          });
+          await db.jobSignals.create({
+            data: buildJobSignals({
+              jobId: createdJob.id,
+              title: job.title,
+              description: job.description,
+              tags: job.tags ?? [],
+            }),
           });
           created++;
         }

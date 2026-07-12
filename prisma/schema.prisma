@@ -11,54 +11,248 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  name      String?
-  password  String
-  role      UserRole   @default(USER)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  savedJobs SavedJob[]
+  id           String           @id @default(cuid())
+  email        String           @unique
+  name         String?
+  password     String
+  role         UserRole         @default(USER)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  savedJobs    SavedJob[]
+  applications JobApplication[]
 
   @@map("users")
 }
 
 model Job {
-  id          String     @id @default(cuid())
-  title       String
-  description String
-  company     String
-  location    String
-  salary      String?
-  source      String     // "linkedin", "indeed", "custom"
-  externalId  String     // External ID from source
-  url         String
-  category    JobCategory
-  tags        String[]   @default([])
-  postedAt    DateTime
-  expiresAt   DateTime?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  savedByUsers SavedJob[]
+  id                String           @id @default(cuid())
+  title             String
+  description       String
+  company           String
+  location          String
+  salary            String?
+  salaryMin         Int?
+  salaryMax         Int?
+  salaryCurrency    String?
+  salaryInterval    String?
+  workplaceType     WorkplaceType    @default(UNSPECIFIED)
+  source            String // "linkedin", "indeed", "custom"
+  externalId        String // External ID from source
+  externalReference String?
+  externalUpdatedAt DateTime?
+  url               String
+  applicationUrl    String?
+  jobUrl            String?
+  category          JobCategory
+  employmentType    String?
+  seniority         String?
+  department        String?
+  requirements      String?
+  tags              String[]         @default([])
+  rawMetadata       Json?
+  postedAt          DateTime
+  expiresAt         DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  savedByUsers      SavedJob[]
+  signals           JobSignals?
+  applications      JobApplication[]
+  status            JobStatus        @default(OPEN)
+  closedAt          DateTime?
+  lastSeenAt        DateTime         @default(now())
+  syncOwnerKey      String?
 
   @@unique([source, externalId])
   @@index([category])
+  @@index([workplaceType])
+  @@index([employmentType])
+  @@index([seniority])
+  @@index([department])
+  @@index([externalUpdatedAt])
+  @@index([salaryMin])
   @@index([source])
   @@index([postedAt])
+  @@index([status])
+  @@index([syncOwnerKey])
+  @@index([source, company, syncOwnerKey])
+  @@index([syncOwnerKey, status, lastSeenAt])
   @@map("jobs")
 }
 
+model JobSignals {
+  id                 String   @id @default(cuid())
+  jobId              String   @unique
+  keywords           String[] @default([])
+  tools              String[] @default([])
+  languages          String[] @default([])
+  frameworks         String[] @default([])
+  concepts           String[] @default([])
+  normalizedTextHash String?
+  analyzerVersion    String?
+  analyzedAt         DateTime @default(now())
+  job                Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([analyzedAt])
+  @@map("job_signals")
+}
+
 model SavedJob {
-  id        String   @id @default(cuid())
-  userId    String
-  jobId     String
-  savedAt   DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  id      String   @id @default(cuid())
+  userId  String
+  jobId   String
+  savedAt DateTime @default(now())
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job     Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@unique([userId, jobId])
   @@index([userId])
   @@map("saved_jobs")
+}
+
+model JobApplication {
+  id        String                @id @default(cuid())
+  userId    String
+  jobId     String
+  status    ApplicationStatus     @default(APPLIED)
+  appliedAt DateTime              @default(now())
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job                   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  events    JobApplicationEvent[]
+
+  @@unique([userId, jobId])
+  @@index([userId, status])
+  @@map("job_applications")
+}
+
+model JobApplicationEvent {
+  id            String            @id @default(cuid())
+  applicationId String
+  status        ApplicationStatus
+  createdAt     DateTime          @default(now())
+  application   JobApplication    @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId, createdAt])
+  @@index([status, createdAt])
+  @@map("job_application_events")
+}
+
+model LeverCompany {
+  id        String   @id @default(cuid())
+  siteName  String   @unique
+  name      String
+  url       String
+  logoUrl   String?
+  lastSync  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([siteName])
+  @@map("lever_companies")
+}
+
+model SourceSyncStat {
+  id             String   @id @default(cuid())
+  source         String   @unique
+  successfulJobs Int      @default(0)
+  failures       Int      @default(0)
+  lastSyncedAt   DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("source_sync_stats")
+}
+
+model SyncRun {
+  id                 String          @id @default(cuid())
+  status             SyncRunStatus   @default(QUEUED)
+  trigger            SyncTrigger     @default(MANUAL)
+  sources            String[]
+  totalSources       Int
+  completedSources   Int             @default(0)
+  totalCompanies     Int             @default(0)
+  processedCompanies Int             @default(0)
+  totalJobs          Int             @default(0)
+  jobsCreated        Int             @default(0)
+  jobsUpdated        Int             @default(0)
+  jobsClosed         Int             @default(0)
+  failures           Int             @default(0)
+  queuedAt           DateTime        @default(now())
+  startedAt          DateTime?
+  finishedAt         DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  sourceRuns         SyncSourceRun[]
+  failureRecords     SyncFailure[]
+
+  @@index([status, queuedAt])
+  @@map("sync_runs")
+}
+
+model SyncSourceRun {
+  id                 String        @id @default(cuid())
+  runId              String
+  source             String
+  status             SyncRunStatus @default(QUEUED)
+  totalCompanies     Int           @default(0)
+  processedCompanies Int           @default(0)
+  totalJobs          Int           @default(0)
+  jobsCreated        Int           @default(0)
+  jobsUpdated        Int           @default(0)
+  jobsClosed         Int           @default(0)
+  failures           Int           @default(0)
+  currentCompany     String?
+  error              String?
+  startedAt          DateTime?
+  finishedAt         DateTime?
+  lastProgressAt     DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  run                SyncRun       @relation(fields: [runId], references: [id], onDelete: Cascade)
+  failureRecords     SyncFailure[]
+
+  @@unique([runId, source])
+  @@index([status, createdAt])
+  @@map("sync_source_runs")
+}
+
+model SyncFailure {
+  id          String           @id @default(cuid())
+  runId       String
+  sourceRunId String?
+  source      String
+  scope       SyncFailureScope
+  company     String?
+  externalId  String?
+  error       String
+  details     Json?
+  createdAt   DateTime         @default(now())
+  run         SyncRun          @relation(fields: [runId], references: [id], onDelete: Cascade)
+  sourceRun   SyncSourceRun?   @relation(fields: [sourceRunId], references: [id], onDelete: Cascade)
+
+  @@index([runId, source, createdAt])
+  @@map("sync_failures")
+}
+
+enum SyncRunStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  COMPLETED_WITH_ERRORS
+  FAILED
+  INTERRUPTED
+}
+
+enum SyncTrigger {
+  MANUAL
+  AUTOMATIC
+}
+
+enum SyncFailureScope {
+  SOURCE
+  COMPANY
+  JOB
 }
 
 enum UserRole {
@@ -69,8 +263,36 @@ enum UserRole {
 enum JobCategory {
   BACKEND
   FRONTEND
+  MOBILE
   FULLSTACK
   DEVOPS
+  SITE_RELIABILITY_ENGINEER
+  PLATFORM_ENGINEER
   DATASCIENCE
   PRODUCT
+  QA
+  SECURITY
+  SUPPORT
+  INFRA
+  IT
+  GENERAL
+}
+
+enum WorkplaceType {
+  REMOTE
+  HYBRID
+  ONSITE
+  UNSPECIFIED
+}
+
+enum JobStatus {
+  OPEN
+  CLOSED
+}
+
+enum ApplicationStatus {
+  APPLIED
+  INTERVIEWING
+  REJECTED
+  APPROVED
 }

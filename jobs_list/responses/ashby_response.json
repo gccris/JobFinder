@@ -1,0 +1,101 @@
+{
+  "apiVersion": "1",
+  "jobs": [
+    {
+      "title": "Product Manager",
+      "location": "Houston, TX",
+      "secondaryLocations": [
+        {
+          "location": "San Francisco"
+          "address": {
+            "addressLocality": "San Francisco",
+            "addressRegion": "California",
+            "addressCountry": "USA"
+          }
+        }
+      ]
+      "department": "Product",
+      "team": "Growth",
+      "isListed": true,
+      "isRemote": true,
+      "workplaceType": "Remote",
+      "descriptionHtml": "<p>Join our team</p>",
+      "descriptionPlain": "Join our team",
+      "publishedAt": "2021-04-30T16:21:55.393+00:00",
+      "employmentType": "FullTime",
+      "address": {
+        "postalAddress": {
+          "addressLocality": "Houston",
+          "addressRegion": "Texas",
+          "addressCountry": "USA"
+        }
+      },
+      "jobUrl": "https://jobs.ashbyhq.com/example_job",
+      "applyUrl": "https://jobs.ashbyhq.com/example/apply"
+    },
+  ],
+  "compensation": {
+    "compensationTierSummary": "$81K – $87K • 0.5% – 1.75% • Offers Bonus",
+    "scrapeableCompensationSalarySummary": "$81K - $87K",
+    "compensationTiers": [
+      {
+        "id": "cedc8928-e850-47e8-a510-e412f61d068a",
+        "tierSummary": "Estimated based on experience $81K – $87K • 0.5% – 1.75% • Offers Bonus",
+        "title": "Zone A",
+        "additionalInformation": null,
+        "components": [
+          {
+            "id": "5d131ad4-6b3a-4f01-938e-511c60bd0398",
+            "summary": "0.5% – 1.75%",
+            "compensationType": "EquityPercentage",
+            "interval": "NONE",
+            "currencyCode": null,
+            "minValue": 0.5,
+            "maxValue": 1.75
+          },
+          {
+            "id": "5c8de1b0-52d6-41d7-8ae3-671ee74c745a",
+            "summary": "Estimated based on experience $81K – $87K",
+            "compensationType": "Salary",
+            "interval": "1 YEAR",
+            "currencyCode": "USD",
+            "minValue": 81000,
+            "maxValue": 87000
+          },
+          {
+            "id": "5f881813-f164-4b91-b652-fd713627e810",
+            "summary": "Offers Bonus",
+            "compensationType": "Bonus",
+            "interval": "1 YEAR",
+            "currencyCode": "USD",
+            "minValue": null,
+            "maxValue": null
+          }
+        ]
+      }
+    ],
+    "summaryComponents": [
+      {
+        "compensationType": "EquityPercentage",
+        "interval": "NONE",
+        "currencyCode": null,
+        "minValue": 0.5,
+        "maxValue": 1.75
+      },
+      {
+        "compensationType": "Salary",
+        "interval": "1 YEAR",
+        "currencyCode": "USD",
+        "minValue": 81000,
+        "maxValue": 87000
+      },
+      {
+        "compensationType": "Bonus",
+        "interval": "1 YEAR",
+        "currencyCode": "USD",
+        "minValue": null,
+        "maxValue": null
+      }
+    ]
+  }
+}

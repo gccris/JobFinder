@@ -1,0 +1,105 @@
+{
+  "data": [
+    {
+      "id": "f2f01e16-27f8-4711-a728-7d49499795a0",
+      "text": "Infrastructure Engineer",
+      "createdAt": 1407779365624,
+      "updatedAt": 1407779365624,
+      "user": "ec1cb1bb-8b58-4834-bc6e-b2af06296e4a",
+      "owner": "ec1cb1bb-8b58-4834-bc6e-b2af06296e4a",
+      "hiringManager": "ec1cb1bb-8b58-4834-bc6e-b2af06296e4a",
+      "confidentiality": "non-confidential",
+      "categories": {
+        "team": "Platform",
+        "department": "Engineering",
+        "location": "San Francisco",
+        "allLocations": [
+          "San Francisco",
+          "New York City"
+        ],
+        "commitment": "Full-time",
+        "level": "Senior"
+      },
+      "content": {
+        "description": "The Infrastructure Engineer will act as...\\nSuperman.",
+        "descriptionHtml": "<div>The <u><b>Infrastructure Engineer</b></u> will act as...</div><div>Superman.</div>",
+        "lists": [
+          {
+            "text": "Job requirements",
+            "content": "<li>Quick learner</li><li>Ambitious</li>"
+          }
+        ],
+        "closing": "Our company is proud to be an equal opportunity workplace.",
+        "closingHtml": "<div>Our <a href=\"https://www.lever.co/\" class=\"postings-link\">company</a> is <span style=\"font-size: 18px;\">proud</span> to be an equal opportunity workplace.</div>"
+      },
+      "country": "US",
+      "tags": [],
+      "state": "published",
+      "distributionChannels": [
+        "internal",
+        "public"
+      ],
+      "reqCode": "7381912",
+      "requisitionCodes": [
+        "7381912"
+      ],
+      "salaryDescription": "This is a salary description.",
+      "salaryDescriptionHtml": "<p>This is a salary description.</p>",
+      "salaryRange": {
+        "max": 60000,
+        "min": 40000,
+        "currency": "USD",
+        "interval": "per-year-salary"
+      },
+      "urls": {
+        "list": "https://jobs.lever.co/example",
+        "show": "https://jobs.lever.co/example/f2f01e16-27f8-4711-a728-7d49499795a0/",
+        "apply": "https://jobs.lever.co/example/f2f01e16-27f8-4711-a728-7d49499795a0/apply"
+      },
+      "workplaceType": "remote"
+    },
+    {
+      "id": "e540e665-06af-4888-a846-89eb36f2097d",
+      "text": "Customer Success Manager",
+      "createdAt": 1407778984761,
+      "updatedAt": 1407779122023,
+      "user": "ec1cb1bb-8b58-4834-bc6e-b2af06296e4a",
+      "owner": "ec1cb1bb-8b58-4834-bc6e-b2af06296e4a",
+      "hiringManager": "ec1cb1bb-8b58-4834-bc6e-b2af06296e4a",
+      "categories": {
+        "team": "Customer Success",
+        "location": "San Francisco",
+        "commitment": "Full-time",
+        "level": null
+      },
+      "content": {
+        "description": "",
+        "descriptionHtml": "",
+        "lists": [],
+        "closing": "",
+        "closingHtml": ""
+      },
+      "tags": [],
+      "state": "published",
+      "distributionChannels": [
+        "internal"
+      ],
+      "reqCode": null,
+      "requisitionCodes": [],
+      "salaryDescription": "This is a salary description.",
+      "salaryDescriptionHtml": "<p>This is a salary description.</p>",
+      "salaryRange": {
+        "max": 60000,
+        "min": 40000,
+        "currency": "USD",
+        "interval": "per-year-salary"
+      },
+      "urls": {
+        "list": "https://jobs.lever.co/example",
+        "show": "https://jobs.lever.co/example/e540e665-06af-4888-a846-89eb36f2097d",
+        "apply": "https://jobs.lever.co/example/e540e665-06af-4888-a846-89eb36f2097d/apply"
+      },
+      "workplaceType": "hybrid"
+    }
+  ]
+}

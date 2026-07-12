@@ -1,16 +1,8 @@
 import axios from "axios";
+import { categorizeJob } from "@/lib/job-classification";
 
 const mapping = (category: string) => {
-  const lowerCategory = category.toLowerCase();
-
-  if (lowerCategory.includes("backend")) return "BACKEND";
-  if (lowerCategory.includes("frontend")) return "FRONTEND";
-  if (lowerCategory.includes("full stack") || lowerCategory.includes("fullstack")) return "FULLSTACK";
-  if (lowerCategory.includes("devops") || lowerCategory.includes("sre")) return "DEVOPS";
-  if (lowerCategory.includes("data") || lowerCategory.includes("ml")) return "DATASCIENCE";
-  if (lowerCategory.includes("product")) return "PRODUCT";
-
-  return "BACKEND"; // default
+  return categorizeJob(category);
 };
 
 export async function scrapeIndeed() {
@@ -34,7 +26,7 @@ export async function getIndeedJobsViaAPI() {
   // Real implementation would use Indeed's Resumes API or similar
   // This is a reference for future implementation
 
-  const jobs = [];
+  const jobs: unknown[] = [];
 
   // Example API call structure:
   // const response = await axios.get('https://api.indeed.com/...', {

@@ -1,4 +1,18 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: job_redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - redis_data:/data
+    networks:
+      - job_network
+
   db:
     image: postgres:16-alpine
     container_name: job_db
@@ -21,15 +35,49 @@ services:
   app:
     build: .
     container_name: job_app
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run dev"
     environment:
-      DATABASE_URL: "postgresql://jobuser:jobpass123@db:5432/job_aggregator"
+      DATABASE_URL: "postgresql://jobuser:jobpass123@db:5432/job_aggregator?connection_limit=8&pool_timeout=10"
+      REDIS_URL: "redis://redis:6379"
       NEXTAUTH_SECRET: "your-secret-key-change-this-in-production"
       NEXTAUTH_URL: "http://localhost:3000"
       NODE_ENV: development
     ports:
       - "3000:3000"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     depends_on:
       db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - job_network
+
+  worker:
+    build: .
+    container_name: job_sync_worker
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run sync:worker"
+    environment:
+      DATABASE_URL: "postgresql://jobuser:jobpass123@db:5432/job_aggregator?connection_limit=6&pool_timeout=10"
+      REDIS_URL: "redis://redis:6379"
+      NODE_ENV: production
+      SYNC_SOURCE_CONCURRENCY: "7"
+      SYNC_COMPANY_CONCURRENCY: "2"
+      SYNC_HTTP_CONCURRENCY: "20"
+      SYNC_DB_WRITE_CONCURRENCY: "4"
+      SYNC_HTTP_TIMEOUT_MS: "20000"
+      SYNC_HTTP_RETRIES: "2"
+    cpus: 0.75
+    mem_limit: 768m
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     volumes:
       - .:/app
@@ -39,6 +87,7 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   job_network:

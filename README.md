@@ -39,7 +39,7 @@ Para todos os detalhes de configuração, estrutura do projeto e deployment:
 - ✅ Dashboard pessoal
 
 ### Para Admin
-- ✅ Sincronização de vagas
+- ✅ Sincronização de fontes em paralelo, executada em background
 - ✅ Gestão de vagas
 - ✅ Analytics e estatísticas
 
@@ -50,10 +50,15 @@ Para todos os detalhes de configuração, estrutura do projeto e deployment:
 - **Frontend**: Next.js 14 + React 18 + TypeScript
 - **Backend**: Next.js API Routes
 - **Database**: PostgreSQL
+- **Background jobs**: Redis + BullMQ, em worker isolado
 - **Auth**: NextAuth.js
 - **Styling**: Tailwind CSS
 - **ORM**: Prisma
 - **Deployment**: Docker + Docker Compose
+
+Os limites do worker podem ser ajustados por `SYNC_SOURCE_CONCURRENCY`,
+`SYNC_COMPANY_CONCURRENCY`, `SYNC_HTTP_CONCURRENCY`,
+`SYNC_DB_WRITE_CONCURRENCY`, `SYNC_HTTP_TIMEOUT_MS` e `SYNC_HTTP_RETRIES`.
 
 ---
 

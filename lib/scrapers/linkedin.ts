@@ -1,20 +1,7 @@
+import { categorizeJob } from "@/lib/job-classification";
+
 const mapping = (title: string) => {
-  const lowerTitle = title.toLowerCase();
-
-  if (lowerTitle.includes("backend")) return "BACKEND";
-  if (lowerTitle.includes("frontend")) return "FRONTEND";
-  if (
-    lowerTitle.includes("full stack") ||
-    lowerTitle.includes("fullstack")
-  )
-    return "FULLSTACK";
-  if (lowerTitle.includes("devops") || lowerTitle.includes("sre"))
-    return "DEVOPS";
-  if (lowerTitle.includes("data") || lowerTitle.includes("ml") || lowerTitle.includes("ai"))
-    return "DATASCIENCE";
-  if (lowerTitle.includes("product")) return "PRODUCT";
-
-  return "BACKEND"; // default
+  return categorizeJob(title);
 };
 
 export async function scrapeLinkedIn() {
@@ -36,7 +23,7 @@ export async function scrapeLinkedIn() {
 
 // Placeholder for future LinkedIn API integration
 export async function getLinkedInJobsViaAPI() {
-  const jobs = [];
+  const jobs: unknown[] = [];
 
   // Example: using Bright Data or similar proxied scraping service
   // const response = await axios.post('https://api.brightdata.com/...', {

@@ -1,0 +1,127 @@
+{
+  "id":44444,
+  "title":"Product Engineer",
+  "company_name":"Greenhouse",
+  "first_published":"2013-08-01T20:00:00Z",
+  "updated_at":"2013-07-02T19:39:23Z",
+  "application_deadline":"2026-08-01T20:00:00Z",
+  "requisition_id": "50",
+  "location":{
+    "name":"San Francisco, CA"
+  },
+  "content":"This is the job description. &amp;lt;p&amp;gt;Any HTML included through the hosted job application editor will be automatically converted into corresponding HTML entities.&amp;lt;/p&amp;gt;",
+  "absolute_url":"http://your.co/careers?gh_jid=444444",
+  "language":"en",
+  "internal_job_id":55555,
+  "include_ai_disclaimer": true,
+  "ai_disclaimer":"<p>We use Greenhouse’s AI-powered Talent Matching tool to compare your application against our job requirements.</p>",
+  "ai_opt_out_request_url":"https://app.greenhouse.io/job_post/55555/ai_opt_out",
+  "location_questions": [
+    {
+      "label": "Location",
+      "fields": [
+        {
+          "name": "location",
+          "type": "input_text",
+          "values": []
+        }
+      ],
+      "required": true
+    },
+    {
+      "label": "Latitude",
+      "fields": [
+        {
+          "name": "latitude",
+          "type": "input_hidden",
+          "values": []
+        }
+      ],
+      "required": true
+    },
+    {
+      "label": "Longitude",
+      "fields": [
+        {
+          "name": "longitude",
+          "type": "input_hidden",
+          "values": []
+        }
+      ],
+      "required": true
+    }
+  ],
+  "questions":[
+    {
+      "required":true,
+      "label":"First Name",
+      "fields":[
+        {
+          "name":"first_name",
+          "type":"input_text"
+        }
+      ]
+    },
+    {
+      "required":true,
+      "label":"Resume",
+      "fields":[
+        {
+          "name":"resume",
+          "type":"input_file"
+        },
+        {
+          "name":"resume_text",
+          "type":"textarea"
+        }
+      ]
+    },
+    {
+      "required":false,
+      "label":"Do you like apples?",
+      "fields":[
+        {
+          "name":"question_2222",
+          "type":"multi_value_single_select",
+          "values":[
+            {
+              "value":0,
+              "label":"No"
+            },
+            {
+              "value":1,
+              "label":"Yes"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata":[
+    {
+      "id":12345,
+      "name":"Field Name",
+      "value_type":"text",
+      "value":"Some value"
+    }
+  ],
+  "data_compliance": [
+    {
+      "type": "gdpr",
+      "requires_consent": true,
+      // To be deprecated. Use if your organization doesn't have single-purpose consent configured, otherwise use separate values for processing and retention
+      "requires_processing_consent": true,
+      "requires_retention_consent": true,
+      "retention_period": 12345
+    }
+  ],
+  "pay_input_ranges": [
+    {
+      "min_cents":5000000,
+      "max_cents":7500000,
+      "currency_type":"USD",
+      "title":"NYC Salary Range",
+      "blurb":"In order to provide transparency..."
+    }
+  ]
+}
