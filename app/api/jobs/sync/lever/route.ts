@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { syncLeverJobs } from "@/lib/scrapers/lever";
 import { NextResponse } from "next/server";
-import { getCurrentAdmin } from "@/lib/current-user";
+import { authorizeAdmin } from "@/lib/api-authorization";
 
 /**
  * POST /api/jobs/sync/lever
@@ -15,8 +15,8 @@ import { getCurrentAdmin } from "@/lib/current-user";
  */
 export async function POST(request: Request) {
   try {
-    const admin = await getCurrentAdmin();
-    if (!admin) return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
+    const authorization = await authorizeAdmin();
+    if (authorization.response) return authorization.response;
     const body = await request.json();
     const { site_name } = body;
 
@@ -64,10 +64,12 @@ export async function POST(request: Request) {
  * Retorna informações sobre como sincronizar vagas da Lever
  */
 export async function GET() {
+  const authorization = await authorizeAdmin();
+  if (authorization.response) return authorization.response;
   return NextResponse.json({
     service: "Lever Postings API - Public",
     description:
-      "Sincroniza vagas da plataforma Lever usando a API pública (sem autenticação necessária)",
+      "Sincroniza vagas da plataforma Lever. Este endpoint exige acesso administrativo.",
     documentation: "https://github.com/lever/postings-api",
     usage: {
       method: "POST",
@@ -95,9 +97,9 @@ export async function GET() {
     api_endpoint_format:
       "https://api.lever.co/v0/postings/{site_name}?mode=json",
     features: [
-      "✅ Sem autenticação necessária",
-      "✅ API Pública",
-      "✅ Deduplicação automática de vagas",
+      "Acesso administrativo obrigatório",
+      "API de origem pública",
+      "Deduplicação automática de vagas",
       "✅ Categorização automática",
       "✅ Limpeza de HTML da descrição",
     ],

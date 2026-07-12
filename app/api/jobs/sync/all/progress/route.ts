@@ -1,10 +1,10 @@
-import { getCurrentAdmin } from "@/lib/current-user";
+import { authorizeAdmin } from "@/lib/api-authorization";
 import { getSyncRunProgress } from "@/lib/sync-run-service";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const admin = await getCurrentAdmin();
-  if (!admin) return NextResponse.json({ success: false, error: "Não autorizado" }, { status: 403 });
+  const authorization = await authorizeAdmin();
+  if (authorization.response) return authorization.response;
   const runId = request.nextUrl.searchParams.get("runId") || undefined;
   const run = await getSyncRunProgress(runId);
   if (!run) return NextResponse.json({ success: false, error: "Sincronização não encontrada" }, { status: 404 });

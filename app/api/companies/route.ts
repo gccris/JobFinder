@@ -1,7 +1,10 @@
 import { getRegisteredCompanies } from "@/lib/companies";
+import { authorizeUser } from "@/lib/api-authorization";
 import { NextResponse } from "next/server";
 
 export async function GET() {
+  const authorization = await authorizeUser();
+  if (authorization.response) return authorization.response;
   try {
     const companies = await getRegisteredCompanies();
 

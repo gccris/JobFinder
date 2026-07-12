@@ -3,12 +3,15 @@ import {
   syncLeverCompaniesFromFile,
 } from "@/lib/scrapers/duckduckgo-search";
 import { NextResponse } from "next/server";
+import { authorizeAdmin } from "@/lib/api-authorization";
 
 /**
  * GET /api/lever/companies
  * Retorna lista de empresas Lever cadastradas
  */
 export async function GET() {
+  const authorization = await authorizeAdmin();
+  if (authorization.response) return authorization.response;
   try {
     const companies = await db.leverCompany.findMany({
       orderBy: { name: "asc" },
@@ -35,6 +38,8 @@ export async function GET() {
  * Sincroniza empresas do arquivo TXT
  */
 export async function POST() {
+  const authorization = await authorizeAdmin();
+  if (authorization.response) return authorization.response;
   try {
     console.log("🔄 Iniciando sincronização do arquivo...");
 
@@ -81,6 +86,8 @@ export async function POST() {
  * Remove todas as empresas Lever cadastradas
  */
 export async function DELETE() {
+  const authorization = await authorizeAdmin();
+  if (authorization.response) return authorization.response;
   try {
     console.log("🗑️ Deletando todas as empresas Lever...");
 

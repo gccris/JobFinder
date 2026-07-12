@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type Job = {
@@ -19,12 +19,12 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [busy, setBusy] = useState(false);
   const router = useRouter();
 
-  async function load() {
+  const load = useCallback(async () => {
     const response = await fetch(`/api/jobs/${params.id}`);
     if (response.ok) setJob(await response.json());
     setLoading(false);
-  }
-  useEffect(() => { load(); }, [params.id]);
+  }, [params.id]);
+  useEffect(() => { load(); }, [load]);
 
   async function toggleSaved() {
     if (!job) return; setBusy(true);

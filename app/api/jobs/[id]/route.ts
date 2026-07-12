@@ -1,13 +1,15 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentAdmin, getCurrentUser } from "@/lib/current-user";
+import { authorizeAdmin, authorizeUser } from "@/lib/api-authorization";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await getCurrentUser();
+    const authorization = await authorizeUser();
+    if (authorization.response) return authorization.response;
+    const user = authorization.user;
     const job = await db.job.findUnique({
       where: { id: params.id },
       select: {
@@ -83,8 +85,8 @@ export async function GET(
 }
 
 export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
-  const admin = await getCurrentAdmin();
-  if (!admin) return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
+  const authorization = await authorizeAdmin();
+  if (authorization.response) return authorization.response;
   try {
     await db.job.delete({ where: { id: params.id } });
     return NextResponse.json({ success: true });

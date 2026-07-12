@@ -1,11 +1,11 @@
 import { getRegisteredCompanies } from "@/lib/companies";
-import { getCurrentAdmin } from "@/lib/current-user";
+import { authorizeAdmin } from "@/lib/api-authorization";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const admin = await getCurrentAdmin();
-  if (!admin) return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
+  const authorization = await authorizeAdmin();
+  if (authorization.response) return authorization.response;
 
   const [companies, jobCounts, openJobCounts, syncStats] = await Promise.all([
     getRegisteredCompanies(),

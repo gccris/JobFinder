@@ -229,22 +229,23 @@ export default function DashboardPage() {
   }
 
   if (!data) {
-    return <div className="container" style={{ padding: "3rem 1.5rem" }}>{error || "Carregando dashboard..."}</div>;
+    return <div className="workspace-container" style={{ padding: "3rem 1.5rem" }}>{error || "Carregando dashboard..."}</div>;
   }
 
   return (
-    <div style={{ background: "var(--background)", minHeight: "100vh" }}>
-      <div className="container" style={{ maxWidth: 1500, margin: "0 auto", padding: "2rem 1.5rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
+    <div className="workspace-page dashboard-page">
+      <div className="workspace-container workspace-container-wide">
+        <div className="workspace-heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           <div>
-            <h1 style={{ fontSize: "2rem", fontWeight: 700 }}>Minhas vagas</h1>
-            <p style={{ color: "var(--text-secondary)" }}>Acompanhe suas candidaturas em um so lugar.</p>
+            <span className="workspace-eyebrow">Acompanhamento</span>
+            <h1>Minhas vagas</h1>
+            <p style={{ color: "var(--text-secondary)" }}>Acompanhe suas candidaturas em um só lugar.</p>
           </div>
         </div>
         {error && <div className="alert alert-error" style={{ marginBottom: 16 }}>{error}</div>}
 
         <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(240px, 1fr))", gap: 12, overflowX: "auto", alignItems: "start", paddingBottom: 12 }}>
+          <div className="kanban-board" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(240px, 1fr))", gap: 12, overflowX: "auto", alignItems: "start", paddingBottom: 12 }}>
             {columns.map((column) => (
               <KanbanColumn
                 key={column.id}
@@ -262,11 +263,11 @@ export default function DashboardPage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "2rem 0 1rem", gap: 12, flexWrap: "wrap" }}>
           <h2 style={{ fontSize: "1.4rem", fontWeight: 700 }}>Atividade</h2>
           <span className="badge" style={{ backgroundColor: "rgba(37, 99, 235, 0.12)", color: "#1d4ed8" }}>
-            Ultimos 30 dias
+            Últimos 30 dias
           </span>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 2fr) minmax(300px, 1fr)", gap: 16 }}>
+        <div className="dashboard-charts" style={{ display: "grid", gridTemplateColumns: "minmax(0, 2fr) minmax(300px, 1fr)", gap: 16 }}>
           <section className="card" style={{ minHeight: 360 }}>
             <h3 style={{ fontWeight: 600, marginBottom: 16 }}>Mudanças de status por dia</h3>
             {data.transitions.length ? (
@@ -284,7 +285,7 @@ export default function DashboardPage() {
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <Empty text="Nenhuma transicao no periodo." />
+              <Empty text="Nenhuma transição no período." />
             )}
           </section>
           <section className="card" style={{ minHeight: 360 }}>
@@ -302,7 +303,7 @@ export default function DashboardPage() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <Empty text="Nenhuma keyword disponivel." />
+              <Empty text="Nenhuma palavra-chave disponível." />
             )}
           </section>
         </div>
@@ -380,7 +381,7 @@ export default function DashboardPage() {
                 </section>
 
                 <section>
-                  <h3 style={{ fontSize: "1rem", marginBottom: "0.75rem" }}>Descricao</h3>
+                  <h3 style={{ fontSize: "1rem", marginBottom: "0.75rem" }}>Descrição</h3>
                   <HtmlContent
                     content={selectedJob.description || "Sem descricao gravada."}
                     style={{ whiteSpace: "pre-wrap", color: "var(--text-secondary)" }}
@@ -448,6 +449,7 @@ function KanbanColumn({
   return (
     <section
       ref={setNodeRef}
+      className="kanban-column"
       style={{ background: isOver ? "rgba(37,99,235,.08)" : "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 12, minHeight: 180 }}
     >
       <h2 style={{ fontWeight: 700, marginBottom: 12 }}>
@@ -457,7 +459,7 @@ function KanbanColumn({
         {cards.map((card) => (
           <KanbanCard key={card.job.id} card={card} disabled={busy === card.job.id} onOpen={onOpen} recentDraggedId={recentDraggedId} lastDragEndedAt={lastDragEndedAt} />
         ))}
-        {!cards.length && <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>Arraste uma vaga para ca.</p>}
+        {!cards.length && <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>Arraste uma vaga para cá.</p>}
       </div>
     </section>
   );
@@ -481,6 +483,7 @@ function KanbanCard({
   return (
     <article
       ref={drag.setNodeRef}
+      className="kanban-card"
       {...drag.listeners}
       {...drag.attributes}
       onClick={() => {
@@ -502,7 +505,7 @@ function KanbanCard({
         <strong style={{ fontWeight: 700 }}>{card.job.title}</strong>
         {card.status !== "SAVED" && card.job.saved && (
           <span className="badge" style={tagStyles.saved}>
-            ⭐
+            Salva
           </span>
         )}
       </div>

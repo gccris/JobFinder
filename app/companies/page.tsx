@@ -17,9 +17,9 @@ export default function CompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [actionMessage, setActionMessage] = useState("");
   const [page, setPage] = useState(1);
   const [sourceFilter, setSourceFilter] = useState("");
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     fetchCompanies();
@@ -29,7 +29,6 @@ export default function CompaniesPage() {
     try {
       setLoading(true);
       setError("");
-      setActionMessage("");
 
       const res = await fetch("/api/companies");
       const data = await res.json();
@@ -41,6 +40,7 @@ export default function CompaniesPage() {
       setCompanies(data.companies || []);
       setPage(1);
       setSourceFilter("");
+      setQuery("");
     } catch (error) {
       console.error("Error fetching companies:", error);
       setError(error instanceof Error ? error.message : "Erro desconhecido ao carregar empresas");
@@ -49,24 +49,14 @@ export default function CompaniesPage() {
     }
   };
 
-  const handleExtractAgain = async () => {
-    await fetchCompanies();
-    setActionMessage("✅ Empresas extraídas novamente de todos os arquivos JSON");
-  };
-
-  const handleDeleteAll = () => {
-    if (!confirm("Tem certeza que deseja remover todas as empresas da lista atual?")) {
-      return;
-    }
-
-    setCompanies([]);
-    setActionMessage("✅ Todas as empresas foram removidas da lista atual");
-  };
-
-  const filteredCompanies = useMemo(
-    () => (sourceFilter ? companies.filter((company) => company.source === sourceFilter) : companies),
-    [companies, sourceFilter]
-  );
+  const filteredCompanies = useMemo(() => {
+    const normalizedQuery = query.trim().toLocaleLowerCase("pt-BR");
+    return companies.filter((company) => {
+      const matchesSource = !sourceFilter || company.source === sourceFilter;
+      const matchesQuery = !normalizedQuery || `${company.name} ${company.slug}`.toLocaleLowerCase("pt-BR").includes(normalizedQuery);
+      return matchesSource && matchesQuery;
+    });
+  }, [companies, query, sourceFilter]);
   const totalPages = Math.max(1, Math.ceil(filteredCompanies.length / pageSize));
   const visibleCompanies = useMemo(
     () => filteredCompanies.slice((page - 1) * pageSize, page * pageSize),
@@ -80,40 +70,13 @@ export default function CompaniesPage() {
   }, [page, totalPages]);
 
   return (
-    <div style={{ backgroundColor: "var(--background)", minHeight: "100vh" }}>
-      <div className="container" style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem 1.5rem" }}>
+    <div className="workspace-page companies-page">
+      <div className="workspace-container">
         <BackButton label="← Voltar" />
-        <h1 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "2rem" }}>
-          🏢 Empresas
-        </h1>
-
-        <div style={{ marginBottom: "1.5rem", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          <button onClick={handleExtractAgain} className="btn-primary" disabled={loading}>
-            {loading ? "⏳ Extraindo..." : "🔄 Extrair Todas Novamente"}
-          </button>
-          <button
-            onClick={handleDeleteAll}
-            disabled={loading || companies.length === 0}
-            style={{
-              padding: "0.75rem 1.5rem",
-              backgroundColor: "var(--danger)",
-              color: "white",
-              border: "none",
-              borderRadius: "0.5rem",
-              fontWeight: 600,
-              cursor: loading || companies.length === 0 ? "not-allowed" : "pointer",
-              opacity: loading || companies.length === 0 ? 0.5 : 1,
-            }}
-          >
-            🗑️ Deletar Todas
-          </button>
+        <div className="workspace-heading">
+          <div><span className="workspace-eyebrow">Diretório</span><h1>Empresas monitoradas</h1><p>Consulte organizações disponíveis em cada plataforma integrada.</p></div>
+          <span className="workspace-count">{filteredCompanies.length} empresas</span>
         </div>
-
-        {actionMessage && (
-          <div className="alert alert-success" style={{ marginBottom: "1.5rem", padding: "0.75rem", borderRadius: "0.5rem" }}>
-            {actionMessage}
-          </div>
-        )}
 
         {loading ? (
           <div style={{ textAlign: "center", padding: "3rem" }}>
@@ -122,21 +85,31 @@ export default function CompaniesPage() {
           </div>
         ) : error ? (
           <div className="card" style={{ textAlign: "center", padding: "2rem" }}>
-            <p style={{ color: "var(--danger)", marginBottom: "1rem" }}>❌ {error}</p>
+            <p style={{ color: "var(--danger)", marginBottom: "1rem" }}>{error}</p>
             <button onClick={fetchCompanies} className="btn-primary">
               Tentar novamente
             </button>
           </div>
         ) : companies.length === 0 ? (
           <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
-            <p style={{ color: "var(--text-secondary)", marginBottom: "1rem" }}>❌ Nenhuma empresa encontrada</p>
+            <p style={{ color: "var(--text-secondary)", marginBottom: "1rem" }}>Nenhuma empresa encontrada</p>
             <button onClick={fetchCompanies} className="btn-primary">
               Recarregar
             </button>
           </div>
         ) : (
           <>
-            <div className="card" style={{ marginBottom: "1rem" }}>
+            <div className="card companies-filters" style={{ marginBottom: "1rem" }}>
+              <div>
+                <label htmlFor="company-query">Buscar empresa</label>
+                <input
+                  id="company-query"
+                  value={query}
+                  onChange={(event) => { setQuery(event.target.value); setPage(1); }}
+                  placeholder="Nome ou identificador..."
+                />
+              </div>
+              <div>
               <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600 }}>Filtrar por site</label>
               <select
                 value={sourceFilter}
@@ -155,10 +128,11 @@ export default function CompaniesPage() {
                 <option value="jazzhr">JazzHR</option>
                 <option value="smartrecruiters">SmartRecruiters</option>
               </select>
+              </div>
             </div>
 
-            <div className="card" style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <div className="card workspace-table-wrap" style={{ overflowX: "auto" }}>
+              <table className="workspace-table" style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ borderBottom: "2px solid var(--border)", backgroundColor: "var(--background-secondary)" }}>
                     <th style={{ padding: "1rem", textAlign: "left", fontWeight: 600, color: "var(--text)" }}>Nome da Empresa</th>
@@ -195,7 +169,7 @@ export default function CompaniesPage() {
                             color: "var(--text)",
                           }}
                         >
-                          🔍 Ver Vagas
+                          Ver vagas
                         </a>
                       </td>
                     </tr>

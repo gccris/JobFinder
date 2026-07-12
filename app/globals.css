@@ -1,3 +1,28 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--text-primary);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--text-primary);
+  --color-muted: var(--surface-muted);
+  --color-muted-foreground: var(--text-secondary);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--primary);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-destructive: var(--danger);
+  --font-sans: var(--font-app);
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+}
+
+@layer base {
 /* ============================================
    VARIÁVEIS DE COR E TEMA
    ============================================ */
@@ -45,9 +70,7 @@ html {
 body {
   background-color: var(--background);
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family: var(--font-app);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
@@ -511,6 +534,339 @@ footer {
   font-weight: 500;
 }
 
+}
 
+/* Design system tokens. Kept after legacy rules until all pages are migrated. */
+:root {
+  color-scheme: light;
+  --font-app: "Inter", "Segoe UI", sans-serif;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --primary-dark: #1d4ed8;
+  --primary-light: #60a5fa;
+  --secondary: #64748b;
+  --success: #059669;
+  --danger: #dc2626;
+  --warning: #d97706;
+  --background: #f8fafc;
+  --background-secondary: #f1f5f9;
+  --surface: #ffffff;
+  --surface-muted: #f1f5f9;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 20px 48px rgba(15, 23, 42, 0.12);
+}
 
+.dark {
+  color-scheme: dark;
+  --primary: #60a5fa;
+  --primary-foreground: #0f172a;
+  --primary-dark: #93c5fd;
+  --primary-light: #3b82f6;
+  --secondary: #94a3b8;
+  --success: #34d399;
+  --danger: #f87171;
+  --warning: #fbbf24;
+  --background: #090f1d;
+  --background-secondary: #111827;
+  --surface: #111827;
+  --surface-muted: #172033;
+  --border: #263349;
+  --text: #f8fafc;
+  --text-primary: #f8fafc;
+  --text-secondary: #a8b3c7;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.32);
+  --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 24px 56px rgba(0, 0, 0, 0.38);
+}
 
+::selection {
+  background: color-mix(in srgb, var(--primary) 24%, transparent);
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 35%, transparent);
+  outline-offset: 2px;
+}
+
+/* Authenticated workspace */
+.workspace-page {
+  min-height: calc(100vh - 4rem);
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--primary) 7%, transparent), transparent 28rem),
+    var(--background);
+}
+
+.workspace-container {
+  width: min(100%, 1280px);
+  margin-inline: auto;
+  padding: 2rem 1.5rem 3rem;
+}
+
+.workspace-container-wide {
+  width: min(100%, 1540px);
+}
+
+.workspace-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin: 0.75rem 0 1.75rem;
+}
+
+.workspace-heading h1 {
+  margin: 0.25rem 0 0;
+  color: var(--text-primary);
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.workspace-heading p {
+  margin: 0.6rem 0 0;
+  color: var(--text-secondary);
+}
+
+.workspace-eyebrow {
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.workspace-count {
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  padding: 0.45rem 0.8rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.workspace-page .card {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.workspace-page .card:hover {
+  transform: none;
+  box-shadow: var(--shadow);
+}
+
+.workspace-page input,
+.workspace-page select,
+.workspace-page textarea {
+  min-height: 2.65rem;
+  border-radius: 0.7rem;
+  background: var(--background);
+}
+
+.workspace-page .btn-primary,
+.workspace-page .btn-secondary,
+.workspace-page .btn-danger {
+  min-height: 2.5rem;
+  border-radius: 0.7rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.workspace-table-wrap {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.workspace-table {
+  min-width: 720px;
+}
+
+.workspace-table thead tr {
+  background: var(--surface-muted) !important;
+}
+
+.workspace-table th {
+  color: var(--text-secondary) !important;
+  font-size: 0.72rem;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.workspace-table th,
+.workspace-table td {
+  padding: 0.9rem 1rem !important;
+}
+
+.workspace-table tbody tr {
+  border-bottom: 1px solid var(--border) !important;
+  transition: background 0.15s ease;
+}
+
+.workspace-table tbody tr:last-child {
+  border-bottom: 0 !important;
+}
+
+.workspace-table tbody tr:hover {
+  background: var(--surface-muted) !important;
+}
+
+/* Jobs */
+.jobs-filter {
+  top: 5.25rem !important;
+  max-height: calc(100vh - 6.75rem);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.jobs-toolbar {
+  margin-bottom: 1rem !important;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  padding: 0.85rem;
+  box-shadow: var(--shadow);
+}
+
+.jobs-list .job-card {
+  border-color: var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.jobs-list .job-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--primary) 42%, var(--border));
+  box-shadow: var(--shadow-md);
+}
+
+.jobs-list .job-title {
+  color: var(--text-primary);
+  font-size: 1.08rem;
+  letter-spacing: -0.01em;
+}
+
+.jobs-list .tag,
+.jobs-list .badge {
+  border-radius: 999px;
+}
+
+/* Companies */
+.companies-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, 0.65fr);
+  gap: 1rem;
+  align-items: end;
+}
+
+.companies-filters label {
+  margin-bottom: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.companies-filters select {
+  max-width: none !important;
+}
+
+/* Dashboard */
+.kanban-board {
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+
+.kanban-column {
+  scroll-snap-align: start;
+  border-radius: 1rem !important;
+  background: var(--surface) !important;
+  box-shadow: var(--shadow);
+}
+
+.kanban-column > h2 {
+  font-size: 0.82rem !important;
+  letter-spacing: 0.01em;
+}
+
+.kanban-card {
+  border-radius: 0.8rem !important;
+  background: var(--background) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.kanban-card:hover {
+  border-color: color-mix(in srgb, var(--primary) 38%, var(--border)) !important;
+  box-shadow: var(--shadow-md);
+}
+
+.dashboard-charts .card {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Admin */
+.admin-page .card {
+  margin-bottom: 1rem !important;
+}
+
+.admin-page .workspace-table-wrap h2 {
+  padding: 1.25rem 1.25rem 0;
+}
+
+@media (max-width: 1024px) {
+  .jobs-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .jobs-filter {
+    position: static !important;
+    max-height: none;
+  }
+
+  .dashboard-charts {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .workspace-container {
+    padding: 1.25rem 1rem 2.5rem;
+  }
+
+  .workspace-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-bottom: 1.25rem;
+  }
+
+  .companies-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .jobs-toolbar {
+    justify-content: stretch !important;
+  }
+
+  .jobs-toolbar > div {
+    width: 100% !important;
+  }
+
+  .jobs-list .job-card > div:first-child {
+    flex-direction: column;
+  }
+
+  .jobs-list .job-card > div:first-child > div:last-child {
+    width: 100%;
+    text-align: left !important;
+  }
+}

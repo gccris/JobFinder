@@ -1,135 +1,55 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { AlertCircle, Eye, EyeOff, LockKeyhole, Mail, UserRound } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+import { AuthShell } from "@/app/components/auth-shell";
+import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
+import { Label } from "@/app/components/ui/label";
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  function update(field: keyof typeof form, value: string) { setForm((current) => ({ ...current, [field]: value })); }
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     setError("");
+    if (form.password !== form.confirmPassword) { setError("As senhas não coincidem."); return; }
+    if (form.password.length < 6) { setError("A senha precisa ter pelo menos 6 caracteres."); return; }
     setLoading(true);
-
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          name,
-          password,
-          confirmPassword,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Erro ao registrar");
-      } else {
-        router.push("/login?registered=true");
-      }
-    } catch (err) {
-      setError("Erro ao registrar. Tente novamente.");
-    } finally {
-      setLoading(false);
-    }
-  };
+      const response = await fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, name: form.name.trim(), email: form.email.trim() }) });
+      const data = await response.json();
+      if (!response.ok) { setError(data.error || "Não foi possível criar sua conta."); return; }
+      router.push("/login?registered=true");
+    } catch {
+      setError("Não foi possível criar sua conta agora. Tente novamente.");
+    } finally { setLoading(false); }
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-center mb-8 text-gray-900">
-          JobHub
-        </h1>
-
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-900">
-          Criar Conta
-        </h2>
-
-        {error && (
-          <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nome
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Senha
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Confirmar Senha
-            </label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 font-semibold mt-6"
-          >
-            {loading ? "Registrando..." : "Criar Conta"}
-          </button>
-        </form>
-
-        <p className="text-center text-gray-600 mt-6">
-          Já tem conta?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline">
-            Faça login aqui
-          </Link>
-        </p>
-      </div>
-    </div>
+    <AuthShell title="Crie sua conta" description="Leva menos de um minuto para começar a organizar suas oportunidades.">
+      {error && <div role="alert" className="mb-5 flex gap-2 rounded-xl border border-red-500/25 bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-300"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />{error}</div>}
+      <form onSubmit={handleSubmit} className="grid gap-4">
+        <Field id="name" label="Nome" icon={UserRound}><Input id="name" autoComplete="name" value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Como podemos chamar você?" className="pl-10" required /></Field>
+        <Field id="email" label="Email" icon={Mail}><Input id="email" type="email" autoComplete="email" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="voce@exemplo.com" className="pl-10" required /></Field>
+        <Field id="password" label="Senha" icon={LockKeyhole}><div className="relative"><Input id="password" type={showPassword ? "text" : "password"} autoComplete="new-password" value={form.password} onChange={(e) => update("password", e.target.value)} placeholder="Mínimo de 6 caracteres" className="px-10" minLength={6} required /><button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-1 top-1 grid h-8 w-8 place-items-center rounded-md bg-transparent p-0 text-muted-foreground hover:bg-muted" aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></div></Field>
+        <Field id="confirmPassword" label="Confirmar senha" icon={LockKeyhole}><Input id="confirmPassword" type={showPassword ? "text" : "password"} autoComplete="new-password" value={form.confirmPassword} onChange={(e) => update("confirmPassword", e.target.value)} placeholder="Repita sua senha" className="pl-10" minLength={6} required /></Field>
+        <Button type="submit" size="lg" disabled={loading} className="mt-2 w-full">{loading ? <><span className="loading" /> Criando conta...</> : "Criar minha conta"}</Button>
+      </form>
+      <p className="mt-7 text-center text-sm text-muted-foreground">Já tem cadastro? <Link href="/login" className="font-semibold text-primary hover:underline">Entre na sua conta</Link></p>
+    </AuthShell>
   );
+}
+
+function Field({ id, label, icon: Icon, children }: { id: string; label: string; icon: typeof UserRound; children: React.ReactNode }) {
+  return <div className="grid gap-2"><Label htmlFor={id}>{label}</Label><div className="relative"><Icon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />{children}</div></div>;
 }

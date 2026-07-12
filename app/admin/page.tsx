@@ -139,7 +139,7 @@ export default function AdminPage() {
 
   const handleSync = async () => {
     if (selectedSources.length === 0) {
-      setMessage("❌ Selecione ao menos uma fonte para sincronizar");
+      setMessage("Selecione ao menos uma fonte para sincronizar");
       setMessageType("error");
       return;
     }
@@ -173,7 +173,7 @@ export default function AdminPage() {
       setMessage("Sincronização enfileirada; as fontes selecionadas iniciarão em paralelo.");
       setMessageType("success");
     } catch (error) {
-      setMessage(`❌ Erro ao sincronizar: ${error instanceof Error ? error.message : "Erro desconhecido"}`);
+      setMessage(`Erro ao sincronizar: ${error instanceof Error ? error.message : "Erro desconhecido"}`);
       setMessageType("error");
       setLoading(false);
     }
@@ -198,11 +198,11 @@ export default function AdminPage() {
         throw new Error(data?.error || `Falha ao apagar vagas (${response.status})`);
       }
 
-      setMessage(`✅ Vagas removidas. Total apagado: ${data.deleted.jobs}`);
+      setMessage(`Vagas removidas. Total apagado: ${data.deleted.jobs}`);
       setMessageType("success");
       await loadSourceStats();
     } catch (error) {
-      setMessage(`❌ Erro ao apagar vagas: ${error instanceof Error ? error.message : "Erro desconhecido"}`);
+      setMessage(`Erro ao apagar vagas: ${error instanceof Error ? error.message : "Erro desconhecido"}`);
       setMessageType("error");
     } finally {
       setDeletingJobs(false);
@@ -215,14 +215,11 @@ export default function AdminPage() {
   );
 
   return (
-    <div style={{ backgroundColor: "var(--background)", minHeight: "100vh" }}>
-      <div className="container" style={{ maxWidth: "1100px", margin: "0 auto", padding: "2rem 1.5rem" }}>
+    <div className="workspace-page admin-page">
+      <div className="workspace-container">
         <BackButton label="← Voltar" />
 
-        <h1 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "0.5rem" }}>Sincronia</h1>
-        <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
-          Escolha as fontes que deseja sincronizar e acompanhe o andamento em tempo real.
-        </p>
+        <div className="workspace-heading"><div><span className="workspace-eyebrow">Administração</span><h1>Sincronização</h1><p>Escolha as fontes e acompanhe o processamento em tempo real.</p></div></div>
 
         <div className="card" style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "1.125rem", fontWeight: 600, marginBottom: "1rem" }}>Fontes</h2>
@@ -284,7 +281,7 @@ export default function AdminPage() {
             </span>
           </div>
           <p style={{ marginBottom: "0.75rem" }}>
-            {progress?.createdJobs || 0}/{progress?.totalJobs || 0} jobs feitos
+            {progress?.createdJobs || 0}/{progress?.totalJobs || 0} vagas processadas
           </p>
           <p style={{ marginBottom: "1rem", color: "var(--text-secondary)" }}>
             {progress?.running ? "As fontes são processadas em paralelo" : "Nenhuma execução em andamento"}
@@ -316,11 +313,11 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className="card" style={{ marginBottom: "1.5rem", overflowX: "auto" }}>
+        <div className="card workspace-table-wrap" style={{ marginBottom: "1.5rem", overflowX: "auto" }}>
           <h2 style={{ fontSize: "1.125rem", fontWeight: 600, marginBottom: "1rem" }}>
             Jobs por fonte
           </h2>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "760px" }}>
+          <table className="workspace-table" style={{ width: "100%", borderCollapse: "collapse", minWidth: "760px" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)", textAlign: "left" }}>
                 <th style={tableCellStyle}>Fonte</th>

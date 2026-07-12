@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import BackButton from "@/app/components/back-button";
@@ -189,10 +189,6 @@ export default function JobsPage() {
   const categoryMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    fetchJobs();
-  }, [page, perPage, categories, location, search, workplaceTypes, sortBy, sortOrder, salaryOnly]);
-
-  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (categoryMenuRef.current && !categoryMenuRef.current.contains(event.target as Node)) {
         setCategoryOpen(false);
@@ -203,7 +199,7 @@ export default function JobsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -231,7 +227,11 @@ export default function JobsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [categories, location, page, perPage, salaryOnly, search, sortBy, sortOrder, workplaceTypes]);
+
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
 
   const handleReset = () => {
     setCategories([]);
@@ -413,14 +413,14 @@ export default function JobsPage() {
   const sortOrderOppositeLabel = sortBy === "postedAt" ? "Mais antigas" : "Descendente";
 
   return (
-    <div style={{ backgroundColor: "var(--background)", minHeight: "100vh" }}>
-      <div className="container" style={{ maxWidth: "1440px", margin: "0 auto", padding: "2rem 1.5rem" }}>
+    <div className="workspace-page jobs-page">
+      <div className="workspace-container workspace-container-wide">
         <BackButton label="Voltar" />
-        <h1 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "1.5rem" }}>Vagas de Emprego</h1>
+        <div className="workspace-heading"><div><span className="workspace-eyebrow">Oportunidades</span><h1>Vagas de emprego</h1><p>Use os filtros para encontrar vagas alinhadas ao que você procura.</p></div></div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "320px minmax(0, 1fr)", gap: "1.5rem", alignItems: "start", marginTop: "-0.75rem" }}>
+        <div className="jobs-layout" style={{ display: "grid", gridTemplateColumns: "320px minmax(0, 1fr)", gap: "1.5rem", alignItems: "start" }}>
           <aside
-            className="card"
+            className="card jobs-filter"
             style={{
               position: "sticky",
               top: "1.5rem",
@@ -445,7 +445,7 @@ export default function JobsPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600 }}>Localizacao</label>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600 }}>Localização</label>
                 <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Cidade, pais..." />
               </div>
 
@@ -603,13 +603,14 @@ export default function JobsPage() {
                   onChange={(e) => setSalaryOnly(e.target.checked)}
                   style={{ width: "auto" }}
                 />
-                Somente com salarios indicados
+                Somente com salários indicados
               </label>
             </div>
           </aside>
 
-          <main>
+          <main className="jobs-results">
             <div
+              className="jobs-toolbar"
               style={{
                 display: "flex",
                 justifyContent: "flex-end",
@@ -676,7 +677,7 @@ export default function JobsPage() {
               </div>
             ) : (
               <>
-                <div style={{ display: "grid", gap: "1rem", marginBottom: "2rem" }}>
+                <div className="jobs-list" style={{ display: "grid", gap: "1rem", marginBottom: "2rem" }}>
                   {jobs.map((job) => {
                     const freshLabel = formatFreshLabel(job.postedAt);
                     return (
@@ -697,19 +698,19 @@ export default function JobsPage() {
                               {job.department && <span className="tag" style={{ whiteSpace: "nowrap" }}>{job.department}</span>}
                             </div>
                             <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", marginBottom: 0 }}>
-                              Localizacao: {job.location}
+                              Localização: {job.location}
                             </p>
                           </div>
                           <div style={{ textAlign: "right" }}>
                             <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem", flexWrap: "wrap", marginBottom: 6 }}>
                               {job.saved && (
                                 <span className="badge" style={listTagStyles.saved}>
-                                  ⭐ Salva
+                                  Salva
                                 </span>
                               )}
                               {job.applicationStatus && (
                                 <span className="badge" style={listTagStyles.applied}>
-                                  ✅ Aplicada
+                                  Aplicada
                                 </span>
                               )}
                             </div>
@@ -758,7 +759,7 @@ export default function JobsPage() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap", marginBottom: "2rem" }}>
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
                     <button onClick={() => setPage(1)} disabled={page === 1} className="btn-secondary">
-                      First
+                      Primeira
                     </button>
                     {visiblePages.map((pageNumber) => (
                       <button
@@ -772,7 +773,7 @@ export default function JobsPage() {
                       </button>
                     ))}
                     <button onClick={() => setPage(pageCount)} disabled={page === pageCount} className="btn-secondary">
-                      Last
+                      Última
                     </button>
                   </div>
                 </div>
@@ -847,7 +848,7 @@ export default function JobsPage() {
                       </p>
                     </div>
                     <div>
-                      <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "0.25rem" }}>Localizacao</p>
+                      <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "0.25rem" }}>Localização</p>
                       <p style={{ fontWeight: 700, color: "var(--text-primary)", marginBottom: 0 }}>{selectedJob.location}</p>
                     </div>
                     <div>
@@ -960,7 +961,7 @@ export default function JobsPage() {
                 )}
 
                 <section>
-                  <h3 style={{ fontSize: "1rem", marginBottom: "0.75rem" }}>Descricao</h3>
+                  <h3 style={{ fontSize: "1rem", marginBottom: "0.75rem" }}>Descrição</h3>
                   <HtmlContent
                     content={selectedJob.description || "Sem descricao gravada."}
                     style={{ whiteSpace: "pre-wrap", color: "var(--text-secondary)" }}

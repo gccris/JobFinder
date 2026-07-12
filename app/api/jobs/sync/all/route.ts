@@ -1,11 +1,11 @@
-import { getCurrentAdmin } from "@/lib/current-user";
+import { authorizeAdmin } from "@/lib/api-authorization";
 import { ActiveSyncRunError, enqueueSyncRun } from "@/lib/sync-run-service";
 import { normalizeSelectedSources } from "@/lib/sync-sources";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  const admin = await getCurrentAdmin();
-  if (!admin) return NextResponse.json({ success: false, error: "Não autorizado" }, { status: 403 });
+  const authorization = await authorizeAdmin();
+  if (authorization.response) return authorization.response;
 
   const body = await request.json().catch(() => ({}));
   const sources = normalizeSelectedSources(body?.sources);

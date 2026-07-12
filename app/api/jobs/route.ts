@@ -1,10 +1,12 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentAdmin, getCurrentUser } from "@/lib/current-user";
+import { authorizeAdmin, authorizeUser } from "@/lib/api-authorization";
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
+    const authorization = await authorizeUser();
+    if (authorization.response) return authorization.response;
+    const user = authorization.user;
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
@@ -235,8 +237,8 @@ function parseOptionalInt(value: string | null) {
 
 export async function DELETE() {
   try {
-    const admin = await getCurrentAdmin();
-    if (!admin) return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
+    const authorization = await authorizeAdmin();
+    if (authorization.response) return authorization.response;
     const jobsResult = await db.job.deleteMany({});
 
     return NextResponse.json({
