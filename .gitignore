@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/.npm-cache
 
 # next.js
 /.next/

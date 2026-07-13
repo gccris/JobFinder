@@ -51,17 +51,17 @@ export function extractJobSignals(input: string | null | undefined): JobSignals 
 
   for (const entry of ordered) {
     if (matchesEntry(normalizedText, entry)) {
-      matched.get(entry.category)?.add(entry.label);
+      matched.get(entry.category)!.add(entry.label);
       keywords.add(entry.label);
     }
   }
 
   return {
     keywords: sortValues(Array.from(keywords)),
-    tools: sortValues(Array.from(matched.get("tools") || [])),
-    languages: sortValues(Array.from(matched.get("languages") || [])),
-    frameworks: sortValues(Array.from(matched.get("frameworks") || [])),
-    concepts: sortValues(Array.from(matched.get("concepts") || [])),
+    tools: sortValues(Array.from(matched.get("tools")!)),
+    languages: sortValues(Array.from(matched.get("languages")!)),
+    frameworks: sortValues(Array.from(matched.get("frameworks")!)),
+    concepts: sortValues(Array.from(matched.get("concepts")!)),
     normalizedTextHash: crypto.createHash("sha1").update(normalizedText).digest("hex"),
     analyzerVersion,
   };

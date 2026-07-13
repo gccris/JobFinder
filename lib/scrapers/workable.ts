@@ -81,8 +81,8 @@ function normalizeWorkableJob(
   const location = getLocation(job);
   const workplaceType = normalizeWorkplaceTypeText(
     job.workplace_type ||
-      job.employment_type ||
       (job.telecommuting || job.remote ? "remote" : "") ||
+      job.employment_type ||
       location
   );
   const externalId = String(
