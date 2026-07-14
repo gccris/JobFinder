@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
         name: input.name,
         password: hashedPassword,
         role: "USER",
+        accessEnabled: false,
       },
     });
 

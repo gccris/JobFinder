@@ -44,7 +44,7 @@ describe("POST /api/auth/register", () => {
 
     expect(response.status).toBe(201);
     expect(mocks.hash).toHaveBeenCalledWith("123456", 10);
-    expect(mocks.create).toHaveBeenCalledWith({ data: { email: "ana@example.com", name: "Ana", password: "hashed", role: "USER" } });
+    expect(mocks.create).toHaveBeenCalledWith({ data: { email: "ana@example.com", name: "Ana", password: "hashed", role: "USER", accessEnabled: false } });
     expect(json).toEqual({ success: true, user: { id: "user-1", email: "ana@example.com", name: "Ana" } });
   });
 

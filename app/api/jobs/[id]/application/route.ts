@@ -1,13 +1,14 @@
 import { ApplicationStatus } from "@prisma/client";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/current-user";
+import { authorizeUser } from "@/lib/api-authorization";
 import { NextRequest, NextResponse } from "next/server";
 
 const statuses = new Set(Object.values(ApplicationStatus));
 
 export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
-  const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  const authorization = await authorizeUser();
+  if (!authorization.user) return authorization.response;
+  const user = authorization.user;
   const application = await db.jobApplication.findUnique({
     where: { userId_jobId: { userId: user.id, jobId: params.id } },
   });
@@ -15,8 +16,9 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
 }
 
 export async function POST(_request: NextRequest, { params }: { params: { id: string } }) {
-  const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  const authorization = await authorizeUser();
+  if (!authorization.user) return authorization.response;
+  const user = authorization.user;
   const job = await db.job.findUnique({ where: { id: params.id }, select: { id: true } });
   if (!job) return NextResponse.json({ error: "Vaga não encontrada" }, { status: 404 });
 
@@ -37,8 +39,9 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  const authorization = await authorizeUser();
+  if (!authorization.user) return authorization.response;
+  const user = authorization.user;
   const body = await request.json().catch(() => ({}));
   const status = body.status as ApplicationStatus;
   if (!statuses.has(status)) return NextResponse.json({ error: "Status inválido" }, { status: 400 });
@@ -57,8 +60,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 }
 
 export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
-  const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  const authorization = await authorizeUser();
+  if (!authorization.user) return authorization.response;
+  const user = authorization.user;
   await db.jobApplication.deleteMany({ where: { userId: user.id, jobId: params.id } });
   return NextResponse.json({ success: true });
 }

@@ -9,7 +9,11 @@ export async function getCurrentUser() {
   });
 }
 
+export function hasToolAccess(user: { role: string; accessEnabled: boolean }) {
+  return user.role === "ADMIN" || user.accessEnabled;
+}
+
 export async function getCurrentAdmin() {
   const user = await getCurrentUser();
-  return user?.role === "ADMIN" ? user : null;
+  return user?.role === "ADMIN" && hasToolAccess(user) ? user : null;
 }

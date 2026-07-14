@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { authorizeUser } from "@/lib/api-authorization";
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -7,25 +7,9 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth();
-
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const user = await db.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
+    const authorization = await authorizeUser();
+    if (!authorization.user) return authorization.response;
+    const user = authorization.user;
 
     // Check if job exists
     const job = await db.job.findUnique({
@@ -78,25 +62,9 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth();
-
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const user = await db.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
+    const authorization = await authorizeUser();
+    if (!authorization.user) return authorization.response;
+    const user = authorization.user;
 
     await db.savedJob.deleteMany({
       where: {

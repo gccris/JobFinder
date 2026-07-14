@@ -1,25 +1,11 @@
-import { auth } from "@/lib/auth";
+import { authorizeAdmin } from "@/lib/api-authorization";
 import { NextRequest, NextResponse } from "next/server";
 import { syncAllJobs } from "@/lib/sync-jobs";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    // Check if user is admin
-    if ((session.user as any)?.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Forbidden - Only admins can sync jobs" },
-        { status: 403 }
-      );
-    }
+    const authorization = await authorizeAdmin();
+    if (!authorization.user) return authorization.response;
 
     // Start sync in background
     await syncAllJobs();

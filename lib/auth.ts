@@ -1,12 +1,24 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 import { compare } from "bcryptjs";
 import { db } from "./db";
 import { authConfig } from "@/auth.config";
 
+export class AccessPendingError extends CredentialsSignin {
+  code = "access_pending";
+}
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
   ...authConfig,
+  adapter: PrismaAdapter(db),
+  session: { strategy: "jwt" },
   providers: [
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+    }),
     Credentials({
       credentials: {
         email: { label: "Email", type: "email" },
@@ -14,7 +26,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email e senha são obrigatórios");
+          return null;
         }
 
         const email = String(credentials.email).trim().toLowerCase();
@@ -22,8 +34,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           where: { email: { equals: email, mode: "insensitive" } },
         });
 
-        if (!user) {
-          throw new Error("Usuário não encontrado");
+        if (!user?.password) {
+          return null;
         }
 
         const isValid = await compare(
@@ -32,7 +44,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         );
 
         if (!isValid) {
-          throw new Error("Senha incorreta");
+          return null;
+        }
+
+        if (user.role !== "ADMIN" && !user.accessEnabled) {
+          throw new AccessPendingError();
         }
 
         return {

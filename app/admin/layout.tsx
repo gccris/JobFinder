@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { getCurrentAdmin } from "@/lib/current-user";
 import { redirect } from "next/navigation";
 
 export default async function AdminLayout({
@@ -6,10 +6,10 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const admin = await getCurrentAdmin();
 
   // Apenas verificar se está logado
-  if (!session?.user || (session.user as { role?: string }).role !== "ADMIN") {
+  if (!admin) {
     redirect("/login");
   }
 

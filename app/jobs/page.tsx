@@ -723,7 +723,7 @@ export default function JobsPage() {
                               {job.category}
                             </span>
                             <span className="badge" style={{ marginLeft: "0.5rem", backgroundColor: "rgba(220, 38, 38, 0.14)", color: "#b91c1c" }}>
-                              {getWorkplaceTypeLabel(job.workplaceType)}
+                              Modelo de trabalho: {getWorkplaceTypeLabel(job.workplaceType)}
                             </span>
                           </div>
                         </div>

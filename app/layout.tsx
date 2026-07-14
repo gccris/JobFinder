@@ -6,6 +6,8 @@ import Navbar from "./components/navbar";
 import AuthSessionProvider from "./components/session-provider";
 import { ThemeProvider } from "./components/theme-provider";
 import { auth } from "@/lib/auth";
+import { getCurrentUser, hasToolAccess } from "@/lib/current-user";
+import { AccessPending } from "./components/access-pending";
 
 export const metadata: Metadata = {
   title: "JobHub - Agregador de Vagas",
@@ -14,14 +16,20 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const session = await auth();
-  const user = session?.user as { name?: string | null; email?: string | null; role?: string } | undefined;
+  const currentUser = session?.user ? await getCurrentUser() : null;
+  const user = currentUser
+    ? { name: currentUser.name, email: currentUser.email, image: currentUser.image, role: currentUser.role }
+    : undefined;
+  const accessPending = currentUser ? !hasToolAccess(currentUser) : false;
 
   return (
     <html lang="pt-BR" className="h-full antialiased" suppressHydrationWarning>
       <body className="flex min-h-full min-w-0 flex-col bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthSessionProvider>
-            {user ? (
+            {accessPending ? (
+              <AccessPending />
+            ) : user ? (
               <AuthenticatedShell user={user}>{children}</AuthenticatedShell>
             ) : (
               <>

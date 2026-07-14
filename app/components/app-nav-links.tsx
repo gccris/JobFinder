@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Home, LayoutDashboard, Search, Settings } from "lucide-react";
+import { Building2, Home, LayoutDashboard, Search, Settings, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,6 +11,7 @@ const items = [
   { href: "/jobs", label: "Vagas", icon: Search },
   { href: "/companies", label: "Empresas", icon: Building2 },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/profile", label: "Meu perfil", icon: UserRound },
 ];
 
 export function AppNavLinks({ isAdmin = false, onNavigate }: { isAdmin?: boolean; onNavigate?: () => void }) {

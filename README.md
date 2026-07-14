@@ -141,9 +141,42 @@ Crie `.env` na raiz para o Next.js e o Prisma:
 ```env
 DATABASE_URL="postgresql://jobuser:jobpass123@localhost:5432/job_aggregator"
 REDIS_URL="redis://localhost:6379"
+
 NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="substitua-por-uma-chave-segura"
+NEXTAUTH_SECRET="substitua-por-uma-chave-longa-e-aleatoria"
+
+AUTH_GOOGLE_ID=""
+AUTH_GOOGLE_SECRET=""
+
+SYNC_SOURCE_CONCURRENCY="7"
+SYNC_COMPANY_CONCURRENCY="2"
+SYNC_HTTP_CONCURRENCY="20"
+SYNC_DB_WRITE_CONCURRENCY="4"
+SYNC_HTTP_TIMEOUT_MS="20000"
+SYNC_HTTP_RETRIES="2"
+
+SMARTRECRUITERS_TOKEN=""
+SMARTRECRUITERS_API_KEY=""
+
+NEXT_DIST_DIR=".next"
 ```
+
+Mantenha apenas `.env` na raiz com os valores locais. Arquivos `.env*` com segredos são ignorados pelo Git.
+
+### Login com Google
+
+1. No Google Cloud Console, configure a tela de consentimento OAuth.
+2. Crie um cliente OAuth 2.0 do tipo **Web application**.
+3. Cadastre as URIs de redirecionamento autorizadas:
+
+```text
+http://localhost:3000/api/auth/callback/google
+https://seu-dominio.com/api/auth/callback/google
+```
+
+4. Preencha `AUTH_GOOGLE_ID` e `AUTH_GOOGLE_SECRET` no ambiente da aplicação.
+
+Em produção, use HTTPS e substitua `seu-dominio.com` pelo mesmo domínio configurado em `NEXTAUTH_URL`. O protocolo, domínio, porta e caminho da URI precisam corresponder exatamente ao cadastro no Google. Reinicie a aplicação ou o container depois de alterar essas variáveis.
 
 ### 3. Prepare o banco
 
@@ -186,6 +219,8 @@ A aplicação funciona sem o worker para navegação e gerenciamento de vagas ex
 | `REDIS_URL` | Para sincronização | `redis://localhost:6379` | Conexão do BullMQ. |
 | `NEXTAUTH_SECRET` | Sim | — | Assinatura e proteção da sessão. |
 | `NEXTAUTH_URL` | Sim em implantação | `http://localhost:3000` no Compose | URL canônica da aplicação. |
+| `AUTH_GOOGLE_ID` | Para login Google | — | ID do cliente OAuth 2.0 criado no Google Cloud. |
+| `AUTH_GOOGLE_SECRET` | Para login Google | — | Segredo do cliente OAuth; nunca deve ser versionado. |
 | `SMARTRECRUITERS_TOKEN` | Não | — | Token opcional para SmartRecruiters. |
 | `SMARTRECRUITERS_API_KEY` | Não | — | Alias opcional do token de SmartRecruiters. |
 | `SYNC_SOURCE_CONCURRENCY` | Não | `7` | Fontes processadas simultaneamente pelo worker. |

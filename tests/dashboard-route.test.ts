@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
-  getCurrentUser: vi.fn(), savedFindMany: vi.fn(), applicationFindMany: vi.fn(), eventFindMany: vi.fn(),
+  authorizeUser: vi.fn(), savedFindMany: vi.fn(), applicationFindMany: vi.fn(), eventFindMany: vi.fn(),
 }));
-vi.mock("@/lib/current-user", () => ({ getCurrentUser: mocks.getCurrentUser }));
+vi.mock("@/lib/api-authorization", () => ({ authorizeUser: mocks.authorizeUser }));
 vi.mock("@/lib/db", () => ({ db: {
   savedJob: { findMany: mocks.savedFindMany },
   jobApplication: { findMany: mocks.applicationFindMany },
@@ -18,7 +18,7 @@ describe("GET /api/dashboard", () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-07-12T12:00:00.000Z"));
-    mocks.getCurrentUser.mockResolvedValue({ id: "user-1" });
+    mocks.authorizeUser.mockResolvedValue({ user: { id: "user-1" }, response: null });
     mocks.savedFindMany.mockResolvedValue([{ savedAt: new Date("2026-07-12"), job: { id: "saved-1" } }]);
     mocks.applicationFindMany.mockResolvedValue([
       { id: "a1", status: "APPLIED", job: { id: "job-1", signals: { keywords: [" React ", "TypeScript"] }, savedByUsers: [{ id: "saved" }] } },
@@ -33,7 +33,7 @@ describe("GET /api/dashboard", () => {
   afterEach(() => vi.useRealTimers());
 
   it("protects dashboard data", async () => {
-    mocks.getCurrentUser.mockResolvedValue(null);
+    mocks.authorizeUser.mockResolvedValue({ user: null, response: new Response(null, { status: 401 }) });
     expect((await GET(new NextRequest("http://localhost/api/dashboard"))).status).toBe(401);
   });
 

@@ -1,13 +1,14 @@
 import { ApplicationStatus } from "@prisma/client";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/current-user";
+import { authorizeUser } from "@/lib/api-authorization";
 import { NextRequest, NextResponse } from "next/server";
 
 const validPeriods = new Set(["7", "30", "90", "all"]);
 
 export async function GET(request: NextRequest) {
-  const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  const authorization = await authorizeUser();
+  if (!authorization.user) return authorization.response;
+  const user = authorization.user;
   const period = validPeriods.has(request.nextUrl.searchParams.get("period") || "")
     ? request.nextUrl.searchParams.get("period")!
     : "30";

@@ -45,6 +45,15 @@ interface SourceStatRow {
   lastSyncedAt: string | null;
 }
 
+interface AdminUserRow {
+  id: string;
+  name: string | null;
+  email: string;
+  role: "USER" | "ADMIN";
+  accessEnabled: boolean;
+  createdAt: string;
+}
+
 const SOURCE_OPTIONS: Array<{ value: SyncSource; label: string }> = [
   { value: "lever", label: "Lever" },
   { value: "greenhouse", label: "Greenhouse" },
@@ -56,6 +65,7 @@ const SOURCE_OPTIONS: Array<{ value: SyncSource; label: string }> = [
 ];
 
 export default function AdminPage() {
+  const [activeTab, setActiveTab] = useState<"sync" | "users">("sync");
   const [selectedSources, setSelectedSources] = useState<SyncSource[]>([]);
   const [loading, setLoading] = useState(false);
   const [deletingJobs, setDeletingJobs] = useState(false);
@@ -65,6 +75,23 @@ export default function AdminPage() {
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [sourceStats, setSourceStats] = useState<SourceStatRow[]>([]);
   const intervalRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const syncTabFromUrl = () => {
+      const tab = new URLSearchParams(window.location.search).get("tab");
+      setActiveTab(tab === "users" ? "users" : "sync");
+    };
+    syncTabFromUrl();
+    window.addEventListener("popstate", syncTabFromUrl);
+    return () => window.removeEventListener("popstate", syncTabFromUrl);
+  }, []);
+
+  const changeTab = (tab: "sync" | "users") => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", tab);
+    window.history.pushState(null, "", url);
+    setActiveTab(tab);
+  };
 
   const loadSourceStats = useCallback(async () => {
     const response = await fetch("/api/admin/source-stats");
@@ -219,7 +246,18 @@ export default function AdminPage() {
       <div className="workspace-container">
         <BackButton label="← Voltar" />
 
-        <div className="workspace-heading"><div><span className="workspace-eyebrow">Administração</span><h1>Sincronização</h1><p>Escolha as fontes e acompanhe o processamento em tempo real.</p></div></div>
+        <div className="workspace-heading"><div><span className="workspace-eyebrow">Administração</span><h1>Painel administrativo</h1><p>Gerencie a sincronização de vagas e o acesso dos usuários.</p></div></div>
+
+        <div role="tablist" aria-label="Seções administrativas" className="mb-6 flex gap-2 border-b border-border">
+          <button role="tab" aria-selected={activeTab === "sync"} onClick={() => changeTab("sync")} className={`border-b-2 px-4 py-3 text-sm font-semibold ${activeTab === "sync" ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>
+            Sincronização
+          </button>
+          <button role="tab" aria-selected={activeTab === "users"} onClick={() => changeTab("users")} className={`border-b-2 px-4 py-3 text-sm font-semibold ${activeTab === "users" ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>
+            Usuários
+          </button>
+        </div>
+
+        {activeTab === "sync" ? <>
 
         <div className="card" style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "1.125rem", fontWeight: 600, marginBottom: "1rem" }}>Fontes</h2>
@@ -357,8 +395,97 @@ export default function AdminPage() {
             {message}
           </div>
         )}
+        </> : <UsersTab />}
       </div>
     </div>
+  );
+}
+
+function UsersTab() {
+  const [users, setUsers] = useState<AdminUserRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const loadUsers = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/users");
+      const data = await safeJsonResponse(response);
+      if (!response.ok || !data?.success) throw new Error(data?.error || "Não foi possível carregar os usuários.");
+      setUsers(data.users);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Não foi possível carregar os usuários.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadUsers(); }, [loadUsers]);
+
+  const updateAccess = async (user: AdminUserRow, enabled: boolean) => {
+    if (!enabled && !window.confirm(`Revogar o acesso de ${user.name || user.email}?`)) return;
+    setUpdatingId(user.id);
+    setMessage("");
+    setError("");
+    try {
+      const response = await fetch(`/api/admin/users/${encodeURIComponent(user.id)}/access`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled }),
+      });
+      const data = await safeJsonResponse(response);
+      if (!response.ok || !data?.success) throw new Error(data?.error || "Não foi possível atualizar o acesso.");
+      setUsers((current) => current.map((row) => row.id === user.id ? data.user : row));
+      setMessage(enabled ? "Acesso liberado com sucesso." : "Acesso revogado com sucesso.");
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Não foi possível atualizar o acesso.");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  if (loading) return <div className="card p-6 text-muted-foreground">Carregando usuários...</div>;
+
+  return (
+    <section aria-labelledby="users-heading">
+      <div className="mb-5">
+        <h2 id="users-heading" className="text-xl font-bold">Usuários cadastrados</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Libere ou revogue o acesso à ferramenta.</p>
+      </div>
+      {error && <div role="alert" className="alert alert-error mb-4 rounded-lg p-4">{error}</div>}
+      {message && <div role="status" className="alert alert-success mb-4 rounded-lg p-4">{message}</div>}
+      <div className="card workspace-table-wrap overflow-x-auto">
+        {users.length === 0 ? <p className="p-6 text-center text-muted-foreground">Nenhum usuário cadastrado.</p> : (
+          <table className="workspace-table w-full min-w-[850px] border-collapse">
+            <thead><tr className="border-b border-border text-left">
+              <th style={tableCellStyle}>Nome</th><th style={tableCellStyle}>Email</th><th style={tableCellStyle}>Perfil</th>
+              <th style={tableCellStyle}>Cadastro</th><th style={tableCellStyle}>Situação</th><th style={tableCellStyle}>Ação</th>
+            </tr></thead>
+            <tbody>{users.map((user) => {
+              const isAdmin = user.role === "ADMIN";
+              const enabled = isAdmin || user.accessEnabled;
+              return <tr key={user.id} className="border-b border-border">
+                <td style={tableCellStyle}><strong>{user.name || "Sem nome"}</strong></td>
+                <td style={tableCellStyle}>{user.email}</td>
+                <td style={tableCellStyle}>{isAdmin ? "Administrador" : "Usuário"}</td>
+                <td style={tableCellStyle}>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(user.createdAt))}</td>
+                <td style={tableCellStyle}><span className={enabled ? "text-emerald-600 dark:text-emerald-300" : "text-amber-600 dark:text-amber-300"}>
+                  {isAdmin ? "Administrador" : enabled ? "Acesso liberado" : "Aguardando liberação"}
+                </span></td>
+                <td style={tableCellStyle}>{isAdmin ? <span className="text-sm text-muted-foreground">Acesso permanente</span> : (
+                  <button className={enabled ? "btn-danger" : "btn-primary"} disabled={updatingId === user.id} onClick={() => updateAccess(user, !enabled)}>
+                    {updatingId === user.id ? "Atualizando..." : enabled ? "Revogar acesso" : "Liberar acesso"}
+                  </button>
+                )}</td>
+              </tr>;
+            })}</tbody>
+          </table>
+        )}
+      </div>
+    </section>
   );
 }
 

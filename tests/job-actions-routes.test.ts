@@ -2,14 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
-  auth: vi.fn(), getCurrentUser: vi.fn(),
-  userFind: vi.fn(), jobFind: vi.fn(), savedFind: vi.fn(), savedCreate: vi.fn(), savedDelete: vi.fn(),
+  authorizeUser: vi.fn(),
+  jobFind: vi.fn(), savedFind: vi.fn(), savedCreate: vi.fn(), savedDelete: vi.fn(),
   applicationFind: vi.fn(), applicationCreate: vi.fn(), applicationUpdate: vi.fn(), applicationDelete: vi.fn(),
 }));
-vi.mock("@/lib/auth", () => ({ auth: mocks.auth }));
-vi.mock("@/lib/current-user", () => ({ getCurrentUser: mocks.getCurrentUser }));
+vi.mock("@/lib/api-authorization", () => ({ authorizeUser: mocks.authorizeUser }));
 vi.mock("@/lib/db", () => ({ db: {
-  user: { findUnique: mocks.userFind }, job: { findUnique: mocks.jobFind },
+  job: { findUnique: mocks.jobFind },
   savedJob: { findUnique: mocks.savedFind, create: mocks.savedCreate, deleteMany: mocks.savedDelete },
   jobApplication: { findUnique: mocks.applicationFind, create: mocks.applicationCreate, update: mocks.applicationUpdate, deleteMany: mocks.applicationDelete },
 } }));
@@ -28,20 +27,17 @@ const context = { params: { id: "job-1" } };
 describe("saved job routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.auth.mockResolvedValue({ user: { email: "ana@example.com" } });
-    mocks.userFind.mockResolvedValue({ id: "user-1" });
+    mocks.authorizeUser.mockResolvedValue({ user: { id: "user-1" }, response: null });
     mocks.jobFind.mockResolvedValue({ id: "job-1" });
   });
 
   it("rejects anonymous users", async () => {
-    mocks.auth.mockResolvedValue(null);
+    mocks.authorizeUser.mockResolvedValue({ user: null, response: new Response(null, { status: 401 }) });
     expect((await save(request("POST"), context)).status).toBe(401);
     expect((await savedStatus(request(), context)).status).toBe(401);
   });
 
-  it("rejects missing users, jobs and duplicate saves", async () => {
-    mocks.userFind.mockResolvedValueOnce(null);
-    expect((await save(request("POST"), context)).status).toBe(404);
+  it("rejects missing jobs and duplicate saves", async () => {
     mocks.jobFind.mockResolvedValueOnce(null);
     expect((await save(request("POST"), context)).status).toBe(404);
     mocks.savedFind.mockResolvedValueOnce({ id: "saved" });
@@ -61,12 +57,12 @@ describe("saved job routes", () => {
 describe("job application routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.getCurrentUser.mockResolvedValue({ id: "user-1" });
+    mocks.authorizeUser.mockResolvedValue({ user: { id: "user-1" }, response: null });
     mocks.jobFind.mockResolvedValue({ id: "job-1" });
   });
 
   it("protects every operation", async () => {
-    mocks.getCurrentUser.mockResolvedValue(null);
+    mocks.authorizeUser.mockResolvedValue({ user: null, response: new Response(null, { status: 401 }) });
     expect((await getApplication(request(), context)).status).toBe(401);
     expect((await createApplication(request("POST"), context)).status).toBe(401);
     expect((await patchApplication(request("PATCH", { status: "APPLIED" }), context)).status).toBe(401);
