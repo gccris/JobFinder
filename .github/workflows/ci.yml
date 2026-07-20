@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: jobuser
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: job_aggregator
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U jobuser -d job_aggregator"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://jobuser:ci-only-password@localhost:5432/job_aggregator
+      REDIS_URL: redis://localhost:6379
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ci-only-secret-not-used-in-production
+      AUTH_TRUST_HOST: "true"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run prisma:generate
+      - name: Test production migrations
+        run: npm run prisma:migrate:deploy
+      - run: npm run lint
+      - run: npm run test:coverage
+      - run: npm run build
+      - name: Build production image
+        run: docker build --tag job-aggregator:${{ github.sha }} .
+      - name: Scan image vulnerabilities
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: job-aggregator:${{ github.sha }}
+          format: table
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.12.2
+      - name: Check Terraform formatting
+        run: terraform fmt -check -recursive infra
+      - name: Validate auto-wake module
+        working-directory: infra/modules/auto-wake
+        run: terraform init -backend=false && terraform validate
+      - name: Validate production data plane
+        working-directory: infra/environments/production
+        run: terraform init -backend=false && terraform validate
+      - name: Validate bootstrap
+        working-directory: infra/environments/bootstrap
+        run: terraform init -backend=false && terraform validate
+      - name: Validate shared resources
+        working-directory: infra/environments/shared
+        run: terraform init -backend=false && terraform validate
+      - name: Validate staging control plane
+        working-directory: infra/environments/staging
+        run: terraform init -backend=false && terraform validate
+      - name: Validate production control plane
+        working-directory: infra/environments/production-control
+        run: terraform init -backend=false && terraform validate
+      - name: Scan Terraform configuration
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: config
+          scan-ref: infra
+          severity: CRITICAL,HIGH
+          exit-code: "1"

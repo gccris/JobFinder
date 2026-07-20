@@ -1,0 +1,14 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - curl -fsSLo /tmp/terraform.zip "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip"
+      - unzip -q /tmp/terraform.zip -d /usr/local/bin
+      - terraform version
+  build:
+    commands:
+      - mkdir -p /tmp/auto-wake-orchestrator
+      - aws s3 cp "s3://${ARTIFACT_BUCKET}/${ORCHESTRATOR_OBJECT_KEY}" /tmp/auto-wake-orchestrator.zip
+      - unzip -q /tmp/auto-wake-orchestrator.zip -d /tmp/auto-wake-orchestrator
+      - bash /tmp/auto-wake-orchestrator/orchestrate.sh

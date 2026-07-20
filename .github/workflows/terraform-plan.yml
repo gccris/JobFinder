@@ -1,0 +1,46 @@
+name: Terraform Plan
+
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+      - ".github/workflows/terraform-plan.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  staging-data-plane:
+    if: github.event.pull_request.head.repo.full_name == github.repository && vars.AWS_PLAN_ROLE_ARN != ''
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v6
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.12.2
+      - name: Build non-secret plan variables
+        working-directory: infra/environments/production
+        env:
+          TF_VARS_JSON: ${{ vars.TERRAFORM_VARS_JSON }}
+          PLAN_IMAGE_URI: ${{ vars.PLAN_IMAGE_URI }}
+        run: |
+          jq --arg image "$PLAN_IMAGE_URI" --arg environment staging \
+            '. + {container_image:$image, environment:$environment}' \
+            <<<"$TF_VARS_JSON" > plan.auto.tfvars.json
+      - name: Initialize read-only staging state
+        working-directory: infra/environments/production
+        run: >-
+          terraform init
+          -backend-config="bucket=${{ vars.STATE_BUCKET }}"
+          -backend-config="key=staging/data-plane.tfstate"
+          -backend-config="region=${{ vars.AWS_REGION }}"
+          -backend-config="use_lockfile=true"
+      - name: Create reviewable plan
+        working-directory: infra/environments/production
+        run: terraform plan -input=false -lock=false -no-color

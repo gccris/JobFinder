@@ -76,6 +76,10 @@ As vagas são deduplicadas pela combinação `source + externalId`. O processame
 - Vitest 3
 - Docker e Docker Compose
 
+## Laboratório SRE
+
+O plano, o tutorial AWS e os runbooks estão em [`docs/sre-delivery-plan.md`](docs/sre-delivery-plan.md), [`docs/sre/02-aws-setup.md`](docs/sre/02-aws-setup.md) e [`docs/sre/03-operations-runbook.md`](docs/sre/03-operations-runbook.md). A infraestrutura como código fica em `infra/` e os pipelines em `.github/workflows/`.
+
 ## Início rápido com Docker
 
 ### Requisitos
@@ -139,7 +143,7 @@ npm install
 Crie `.env` na raiz para o Next.js e o Prisma:
 
 ```env
-DATABASE_URL="postgresql://jobuser:jobpass123@localhost:5432/job_aggregator"
+DATABASE_URL="postgresql://jobuser:SUA_SENHA_LOCAL@localhost:5432/job_aggregator"
 REDIS_URL="redis://localhost:6379"
 
 NEXTAUTH_URL="http://localhost:3000"
@@ -198,13 +202,13 @@ npm run dev
 O worker não carrega arquivos dotenv explicitamente. Exporte pelo menos `DATABASE_URL` e `REDIS_URL` no ambiente do segundo terminal antes de iniciá-lo. Exemplo em PowerShell:
 
 ```powershell
-$env:DATABASE_URL="postgresql://jobuser:jobpass123@localhost:5432/job_aggregator"
+$env:DATABASE_URL="postgresql://jobuser:SUA_SENHA_LOCAL@localhost:5432/job_aggregator"
 $env:REDIS_URL="redis://localhost:6379"
 npm run sync:worker
 ```
 
 ```bash
-export DATABASE_URL="postgresql://jobuser:jobpass123@localhost:5432/job_aggregator"
+export DATABASE_URL="postgresql://jobuser:SUA_SENHA_LOCAL@localhost:5432/job_aggregator"
 export REDIS_URL="redis://localhost:6379"
 npm run sync:worker
 ```

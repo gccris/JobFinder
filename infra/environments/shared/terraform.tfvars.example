@@ -1,0 +1,7 @@
+state_bucket_name    = "jobhub-ACCOUNT_ID-terraform-state"
+artifact_bucket_name = "jobhub-ACCOUNT_ID-artifacts"
+budget_email         = "seu-email@example.com"
+tags = {
+  owner      = "SEU_NOME"
+  expires-at = "YYYY-MM-DD"
+}

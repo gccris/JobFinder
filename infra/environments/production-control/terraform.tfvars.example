@@ -1,0 +1,13 @@
+aws_region                     = "us-east-1"
+name_prefix                    = "jobhub"
+state_bucket_name              = "jobhub-ACCOUNT_ID-terraform-state"
+state_bucket_arn               = "arn:aws:s3:::jobhub-ACCOUNT_ID-terraform-state"
+artifact_bucket_name           = "jobhub-ACCOUNT_ID-artifacts"
+artifact_bucket_arn            = "arn:aws:s3:::jobhub-ACCOUNT_ID-artifacts"
+terraform_deploy_role_arn      = "arn:aws:iam::ACCOUNT_ID:role/jobhub-auto-wake-deploy"
+private_subnet_ids             = ["subnet-private-a", "subnet-private-b"]
+vpc_link_security_group_id     = "sg-vpc-link"
+tags = {
+  owner      = "SEU_NOME"
+  expires-at = "YYYY-MM-DD"
+}

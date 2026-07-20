@@ -29,7 +29,14 @@ async function main() {
   });
   worker.on("error", (error) => console.error("Erro no worker de sincronização:", error));
 
+  const metricsTimer = setInterval(() => {
+    emitQueueMetrics().catch((error) => console.error("Falha ao publicar métricas da fila:", error));
+  }, 60_000);
+  metricsTimer.unref();
+  await emitQueueMetrics();
+
   const shutdown = async () => {
+    clearInterval(metricsTimer);
     await worker.close();
     await getSyncQueue().close();
     await db.$disconnect();
@@ -38,6 +45,37 @@ async function main() {
   process.once("SIGTERM", shutdown);
   process.once("SIGINT", shutdown);
   console.log(`Worker ${SYNC_QUEUE_NAME} iniciado com concorrência ${SOURCE_CONCURRENCY}`);
+}
+
+async function emitQueueMetrics() {
+  const queue = getSyncQueue();
+  const [counts, oldestJobs] = await Promise.all([
+    queue.getJobCounts("active", "waiting", "delayed", "prioritized", "waiting-children", "paused"),
+    queue.getJobs(["waiting", "delayed", "prioritized"], 0, 0, true),
+  ]);
+  const queueDepth = Object.values(counts).reduce((total, count) => total + count, 0);
+  const oldestTimestamp = oldestJobs.reduce<number | null>(
+    (oldest, job) => oldest === null || job.timestamp < oldest ? job.timestamp : oldest,
+    null
+  );
+  const oldestJobAgeSeconds = oldestTimestamp === null ? 0 : Math.max(0, (Date.now() - oldestTimestamp) / 1_000);
+
+  console.log(JSON.stringify({
+    _aws: {
+      Timestamp: Date.now(),
+      CloudWatchMetrics: [{
+        Namespace: "JobHub",
+        Dimensions: [["Environment"]],
+        Metrics: [
+          { Name: "QueueDepth", Unit: "Count" },
+          { Name: "OldestJobAgeSeconds", Unit: "Seconds" },
+        ],
+      }],
+    },
+    Environment: process.env.APP_ENVIRONMENT || process.env.NODE_ENV || "unknown",
+    QueueDepth: queueDepth,
+    OldestJobAgeSeconds: oldestJobAgeSeconds,
+  }));
 }
 
 async function recoverPendingRuns() {
