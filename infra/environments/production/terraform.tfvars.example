@@ -1,0 +1,28 @@
+environment = "production"
+aws_region  = "us-east-1"
+name_prefix = "jobhub"
+
+vpc_id            = "vpc-00000000000000000"
+private_subnet_ids = ["subnet-private-a", "subnet-private-b"]
+task_subnet_ids    = ["subnet-public-a", "subnet-public-b"]
+alb_subnet_ids     = ["subnet-private-a", "subnet-private-b"]
+
+api_gateway_id                         = "API_ID_DO_AUTO_WAKE"
+api_gateway_vpc_link_id                = "VPC_LINK_ID_DO_AUTO_WAKE"
+api_gateway_vpc_link_security_group_id = "sg-vpc-link"
+database_security_group_id             = "sg-aurora"
+
+ecs_task_execution_role_arn = "arn:aws:iam::ACCOUNT_ID:role/jobhub-ecs-execution"
+ecs_app_task_role_arn       = "arn:aws:iam::ACCOUNT_ID:role/jobhub-ecs-app"
+ecs_worker_task_role_arn    = "arn:aws:iam::ACCOUNT_ID:role/jobhub-ecs-worker"
+
+container_image = "ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/jobhub@sha256:DIGEST"
+nextauth_url     = "https://API_ID.execute-api.us-east-1.amazonaws.com"
+
+database_url_secret_arn              = "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:jobhub/production/database-url"
+nextauth_secret_arn                  = "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:jobhub/production/nextauth-secret"
+auth_google_id_secret_arn            = "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:jobhub/production/google-client-id"
+auth_google_secret_secret_arn        = "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:jobhub/production/google-client-secret"
+smartrecruiters_token_secret_arn     = "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:jobhub/production/smartrecruiters-token"
+smartrecruiters_api_key_secret_arn   = "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:jobhub/production/smartrecruiters-api-key"
+alarm_sns_topic_arn                  = "arn:aws:sns:us-east-1:ACCOUNT_ID:jobhub-alarms"

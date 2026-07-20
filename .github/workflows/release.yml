@@ -1,0 +1,110 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      activate_production_now:
+        description: "Acordar/atualizar producao depois da aprovacao"
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.image.outputs.uri }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - uses: docker/setup-buildx-action@v4
+      - id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - id: image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: echo "uri=$REGISTRY/$REPOSITORY@$DIGEST" >> "$GITHUB_OUTPUT"
+
+  staging:
+    needs: image
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v6
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Package immutable staging release
+        env:
+          IMAGE_URI: ${{ needs.image.outputs.image }}
+          TF_VARS_JSON: ${{ vars.TERRAFORM_VARS_JSON }}
+        run: |
+          jq --arg image "$IMAGE_URI" --arg environment staging \
+            '. + {container_image:$image, environment:$environment}' \
+            <<<"$TF_VARS_JSON" > infra/environments/production/release.auto.tfvars.json
+          zip -qr release.zip infra/environments/production
+          aws s3 cp release.zip "s3://${{ vars.ARTIFACT_BUCKET }}/releases/staging-approved.zip"
+      - name: Apply staging and run migrations
+        env:
+          PROJECT: ${{ vars.AUTO_WAKE_CODEBUILD_PROJECT }}
+        run: |
+          BUILD_ID=$(aws codebuild start-build --project-name "$PROJECT" \
+            --environment-variables-override name=ACTION,value=WAKE,type=PLAINTEXT \
+            --query 'build.id' --output text)
+          while true; do
+            STATUS=$(aws codebuild batch-get-builds --ids "$BUILD_ID" --query 'builds[0].buildStatus' --output text)
+            case "$STATUS" in
+              SUCCEEDED) break ;;
+              FAILED|FAULT|STOPPED|TIMED_OUT) exit 1 ;;
+            esac
+            sleep 30
+          done
+
+  production:
+    needs: [image, staging]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v6
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Package the exact approved image digest
+        env:
+          IMAGE_URI: ${{ needs.image.outputs.image }}
+          TF_VARS_JSON: ${{ vars.TERRAFORM_VARS_JSON }}
+        run: |
+          jq --arg image "$IMAGE_URI" --arg environment production \
+            '. + {container_image:$image, environment:$environment}' \
+            <<<"$TF_VARS_JSON" > infra/environments/production/release.auto.tfvars.json
+          zip -qr release.zip infra/environments/production
+          aws s3 cp release.zip "s3://${{ vars.ARTIFACT_BUCKET }}/releases/production-approved.zip"
+      - name: Activate production release
+        if: inputs.activate_production_now
+        env:
+          PROJECT: ${{ vars.AUTO_WAKE_CODEBUILD_PROJECT }}
+        run: |
+          aws codebuild start-build --project-name "$PROJECT" \
+            --environment-variables-override name=ACTION,value=WAKE,type=PLAINTEXT

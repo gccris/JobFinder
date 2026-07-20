@@ -24,4 +24,9 @@ describe("sync queue primitives", () => {
       host: "redis.internal", port: 6380, username: "user", password: "secret", db: 4, maxRetriesPerRequest: null,
     });
   });
+
+  it("enables TLS for rediss URLs", () => {
+    process.env.REDIS_URL = "rediss://redis.internal:6379";
+    expect(getRedisConnection()).toMatchObject({ host: "redis.internal", port: 6379, tls: {} });
+  });
 });

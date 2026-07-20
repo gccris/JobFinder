@@ -1,0 +1,14 @@
+# ALB interno recebe trafego somente do API Gateway VPC Link; TLS termina no API Gateway publico.
+AVD-AWS-0054
+AWS-0054
+
+# App e worker precisam de saida HTTPS para AWS APIs e fontes externas de vagas.
+AVD-AWS-0104
+AWS-0104
+
+# Excecao temporaria: corrigir exige migracao major do Next.js; tratar em PR dedicado de upgrade do framework.
+GHSA-8h8q-6873-q5fj
+GHSA-h25m-26qc-wcjf
+GHSA-q4gf-8mx6-v5v3
+CVE-2026-44573
+CVE-2026-44578

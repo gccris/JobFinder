@@ -1,7 +1,12 @@
 const PUBLIC_PAGES = new Set(["/", "/login", "/register"]);
 
 export function isPublicPath(pathname: string) {
-  return PUBLIC_PAGES.has(pathname) || pathname.startsWith("/api/auth/");
+  return (
+    PUBLIC_PAGES.has(pathname) ||
+    pathname === "/api/health/live" ||
+    pathname === "/api/health/ready" ||
+    pathname.startsWith("/api/auth/")
+  );
 }
 
 export function isAuthPage(pathname: string) {

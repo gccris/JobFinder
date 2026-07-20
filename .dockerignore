@@ -5,7 +5,14 @@ npm-debug.log
 .gitignore
 .env
 .env.local
+.env.*
+!.env.example
 .DS_Store
 dist
 build
 coverage
+infra
+docs
+.github
+*.tfstate
+*.tfplan

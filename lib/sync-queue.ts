@@ -36,6 +36,7 @@ export function getRedisConnection(): ConnectionOptions {
     username: url.username || undefined,
     password: url.password || undefined,
     db: url.pathname.length > 1 ? Number(url.pathname.slice(1)) : undefined,
+    tls: url.protocol === "rediss:" ? {} : undefined,
     maxRetriesPerRequest: null,
   };
 }

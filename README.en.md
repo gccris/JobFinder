@@ -139,7 +139,7 @@ npm install
 Create `.env` at the project root for Next.js and Prisma:
 
 ```env
-DATABASE_URL="postgresql://jobuser:jobpass123@localhost:5432/job_aggregator"
+DATABASE_URL="postgresql://jobuser:YOUR_LOCAL_PASSWORD@localhost:5432/job_aggregator"
 REDIS_URL="redis://localhost:6379"
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="replace-with-a-secure-secret"
@@ -165,13 +165,13 @@ npm run dev
 The worker does not explicitly load dotenv files. Export at least `DATABASE_URL` and `REDIS_URL` in the second terminal before starting it. PowerShell example:
 
 ```powershell
-$env:DATABASE_URL="postgresql://jobuser:jobpass123@localhost:5432/job_aggregator"
+$env:DATABASE_URL="postgresql://jobuser:YOUR_LOCAL_PASSWORD@localhost:5432/job_aggregator"
 $env:REDIS_URL="redis://localhost:6379"
 npm run sync:worker
 ```
 
 ```bash
-export DATABASE_URL="postgresql://jobuser:jobpass123@localhost:5432/job_aggregator"
+export DATABASE_URL="postgresql://jobuser:YOUR_LOCAL_PASSWORD@localhost:5432/job_aggregator"
 export REDIS_URL="redis://localhost:6379"
 npm run sync:worker
 ```

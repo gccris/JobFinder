@@ -17,15 +17,15 @@ services:
     image: postgres:16-alpine
     container_name: job_db
     environment:
-      POSTGRES_USER: jobuser
-      POSTGRES_PASSWORD: jobpass123
-      POSTGRES_DB: job_aggregator
+      POSTGRES_USER: ${POSTGRES_USER:-jobuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}
+      POSTGRES_DB: ${POSTGRES_DB:-job_aggregator}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U jobuser"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-jobuser}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,10 +37,11 @@ services:
     container_name: job_app
     command: sh -c "npm ci && npx prisma generate && npx prisma migrate deploy && npm run dev"
     environment:
-      DATABASE_URL: "postgresql://jobuser:jobpass123@db:5432/job_aggregator?connection_limit=8&pool_timeout=10"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-jobuser}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}@db:5432/${POSTGRES_DB:-job_aggregator}?connection_limit=8&pool_timeout=10"
       REDIS_URL: "redis://redis:6379"
-      NEXTAUTH_SECRET: "your-secret-key-change-this-in-production"
-      NEXTAUTH_URL: "http://localhost:3000"
+      NEXTAUTH_SECRET: "${NEXTAUTH_SECRET:?Defina NEXTAUTH_SECRET no arquivo .env}"
+      NEXTAUTH_URL: "${NEXTAUTH_URL:-http://localhost:3000}"
+      AUTH_TRUST_HOST: "${AUTH_TRUST_HOST:-true}"
       AUTH_GOOGLE_ID: "${AUTH_GOOGLE_ID:-}"
       AUTH_GOOGLE_SECRET: "${AUTH_GOOGLE_SECRET:-}"
       NODE_ENV: development
@@ -65,15 +66,16 @@ services:
     container_name: job_sync_worker
     command: sh -c "npm ci && npx prisma generate && npx prisma migrate deploy && npm run sync:worker"
     environment:
-      DATABASE_URL: "postgresql://jobuser:jobpass123@db:5432/job_aggregator?connection_limit=6&pool_timeout=10"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-jobuser}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}@db:5432/${POSTGRES_DB:-job_aggregator}?connection_limit=6&pool_timeout=10"
       REDIS_URL: "redis://redis:6379"
       NODE_ENV: production
-      SYNC_SOURCE_CONCURRENCY: "7"
-      SYNC_COMPANY_CONCURRENCY: "2"
-      SYNC_HTTP_CONCURRENCY: "20"
-      SYNC_DB_WRITE_CONCURRENCY: "4"
-      SYNC_HTTP_TIMEOUT_MS: "20000"
-      SYNC_HTTP_RETRIES: "2"
+      APP_ENVIRONMENT: "${APP_ENVIRONMENT:-local}"
+      SYNC_SOURCE_CONCURRENCY: "${SYNC_SOURCE_CONCURRENCY:-7}"
+      SYNC_COMPANY_CONCURRENCY: "${SYNC_COMPANY_CONCURRENCY:-2}"
+      SYNC_HTTP_CONCURRENCY: "${SYNC_HTTP_CONCURRENCY:-20}"
+      SYNC_DB_WRITE_CONCURRENCY: "${SYNC_DB_WRITE_CONCURRENCY:-4}"
+      SYNC_HTTP_TIMEOUT_MS: "${SYNC_HTTP_TIMEOUT_MS:-20000}"
+      SYNC_HTTP_RETRIES: "${SYNC_HTTP_RETRIES:-2}"
     cpus: 0.75
     mem_limit: 768m
     depends_on:
