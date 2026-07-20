@@ -33,6 +33,18 @@ resource "aws_s3_bucket" "state" {
   }
 }
 
+resource "aws_kms_key" "state" {
+  description             = "CMK para criptografar o bucket de estado Terraform."
+  deletion_window_in_days = 30
+  enable_key_rotation     = true
+  tags                    = local.common_tags
+}
+
+resource "aws_kms_alias" "state" {
+  name          = "alias/${var.name_prefix}-terraform-state"
+  target_key_id = aws_kms_key.state.key_id
+}
+
 resource "aws_s3_bucket_versioning" "state" {
   bucket = aws_s3_bucket.state.id
   versioning_configuration {
@@ -44,7 +56,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "state" {
   bucket = aws_s3_bucket.state.id
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+      kms_master_key_id = aws_kms_key.state.arn
+      sse_algorithm     = "aws:kms"
     }
   }
 }

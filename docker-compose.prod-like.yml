@@ -35,7 +35,7 @@ services:
   app:
     build: .
     container_name: job_app_prod_like
-    command: npm run start
+    command: node node_modules/next/dist/bin/next start
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-jobuser}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}@db:5432/${POSTGRES_DB:-job_aggregator}?connection_limit=8&pool_timeout=10
       REDIS_URL: redis://redis:6379
@@ -64,7 +64,7 @@ services:
   worker:
     build: .
     container_name: job_worker_prod_like
-    command: npm run sync:worker
+    command: node --import tsx scripts/sync-worker.ts
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-jobuser}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}@db:5432/${POSTGRES_DB:-job_aggregator}?connection_limit=6&pool_timeout=10
       REDIS_URL: redis://redis:6379

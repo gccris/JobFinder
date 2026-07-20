@@ -37,6 +37,18 @@ resource "aws_vpc" "this" {
   tags                 = merge(local.common_tags, { Name = "${var.name_prefix}-vpc" })
 }
 
+resource "aws_kms_key" "shared" {
+  description             = "CMK compartilhada para dados persistentes e mensagens operacionais."
+  deletion_window_in_days = 30
+  enable_key_rotation     = true
+  tags                    = local.common_tags
+}
+
+resource "aws_kms_alias" "shared" {
+  name          = "alias/${var.name_prefix}-shared"
+  target_key_id = aws_kms_key.shared.key_id
+}
+
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
   tags   = merge(local.common_tags, { Name = "${var.name_prefix}-igw" })
@@ -114,6 +126,7 @@ resource "aws_rds_cluster" "this" {
   db_subnet_group_name            = aws_db_subnet_group.this.name
   vpc_security_group_ids          = [aws_security_group.database.id]
   storage_encrypted               = true
+  kms_key_id                      = aws_kms_key.shared.arn
   backup_retention_period         = 7
   preferred_backup_window         = "05:00-06:00"
   deletion_protection             = true
@@ -182,7 +195,10 @@ resource "aws_s3_bucket_versioning" "artifacts" {
 resource "aws_s3_bucket_server_side_encryption_configuration" "artifacts" {
   bucket = aws_s3_bucket.artifacts.id
   rule {
-    apply_server_side_encryption_by_default { sse_algorithm = "AES256" }
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.shared.arn
+      sse_algorithm     = "aws:kms"
+    }
   }
 }
 
@@ -305,8 +321,9 @@ resource "aws_iam_role_policy" "auto_wake_pass_roles" {
 }
 
 resource "aws_sns_topic" "alarms" {
-  name = "${var.name_prefix}-alarms"
-  tags = local.common_tags
+  name              = "${var.name_prefix}-alarms"
+  kms_master_key_id = aws_kms_key.shared.arn
+  tags              = local.common_tags
 }
 
 resource "aws_sns_topic_subscription" "email" {
