@@ -65,6 +65,7 @@ jobs:
           format: table
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+          trivyignores: .trivyignore
           exit-code: "1"
 
   secrets:
@@ -110,4 +111,5 @@ jobs:
           scan-type: config
           scan-ref: infra
           severity: CRITICAL,HIGH
+          trivyignores: .trivyignore
           exit-code: "1"
