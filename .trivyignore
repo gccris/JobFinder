@@ -5,3 +5,7 @@ AWS-0054
 # App e worker precisam de saida HTTPS para AWS APIs e fontes externas de vagas.
 AVD-AWS-0104
 AWS-0104
+
+# Excecao temporaria: corrigir exige migracao major do Next.js; tratar em PR dedicado de upgrade do framework.
+CVE-2026-44573
+CVE-2026-44578
