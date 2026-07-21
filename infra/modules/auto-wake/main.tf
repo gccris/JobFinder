@@ -361,6 +361,24 @@ data "aws_iam_policy_document" "codebuild" {
   }
 
   statement {
+    sid       = "DecryptS3Objects"
+    actions   = ["kms:Decrypt"]
+    resources = ["*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["s3.${data.aws_region.current.region}.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:CallerAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+  }
+
+  statement {
     sid       = "ListBuckets"
     actions   = ["s3:ListBucket"]
     resources = [var.artifact_bucket_arn, var.terraform_state_bucket_arn]
