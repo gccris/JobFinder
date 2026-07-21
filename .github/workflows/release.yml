@@ -72,11 +72,28 @@ jobs:
           BUILD_ID=$(aws codebuild start-build --project-name "$PROJECT" \
             --environment-variables-override name=ACTION,value=WAKE,type=PLAINTEXT \
             --query 'build.id' --output text)
+          echo "Started CodeBuild: $BUILD_ID"
           while true; do
             STATUS=$(aws codebuild batch-get-builds --ids "$BUILD_ID" --query 'builds[0].buildStatus' --output text)
             case "$STATUS" in
               SUCCEEDED) break ;;
-              FAILED|FAULT|STOPPED|TIMED_OUT) exit 1 ;;
+              FAILED|FAULT|STOPPED|TIMED_OUT)
+                aws codebuild batch-get-builds \
+                  --ids "$BUILD_ID" \
+                  --query 'builds[0].{status:buildStatus,phase:currentPhase,log:logs.deepLink,phases:phases[*].{type:phaseType,status:phaseStatus,context:contexts[*].message}}' \
+                  --output json
+                LOG_GROUP=$(aws codebuild batch-get-builds --ids "$BUILD_ID" --query 'builds[0].logs.groupName' --output text)
+                LOG_STREAM=$(aws codebuild batch-get-builds --ids "$BUILD_ID" --query 'builds[0].logs.streamName' --output text)
+                if [ "$LOG_GROUP" != "None" ] && [ "$LOG_STREAM" != "None" ]; then
+                  aws logs get-log-events \
+                    --log-group-name "$LOG_GROUP" \
+                    --log-stream-name "$LOG_STREAM" \
+                    --limit 200 \
+                    --query 'events[*].message' \
+                    --output text || true
+                fi
+                exit 1
+                ;;
             esac
             sleep 30
           done
