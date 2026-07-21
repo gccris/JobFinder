@@ -127,7 +127,7 @@ resource "aws_rds_cluster" "this" {
   vpc_security_group_ids          = [aws_security_group.database.id]
   storage_encrypted               = true
   kms_key_id                      = aws_kms_key.shared.arn
-  backup_retention_period         = 7
+  backup_retention_period         = var.database_backup_retention_days
   preferred_backup_window         = "05:00-06:00"
   deletion_protection             = true
   copy_tags_to_snapshot           = true

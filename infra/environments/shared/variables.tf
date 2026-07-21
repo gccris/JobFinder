@@ -37,6 +37,12 @@ variable "database_master_username" {
   default = "jobadmin"
 }
 
+variable "database_backup_retention_days" {
+  description = "Dias de retencao de backup do Aurora. Use 1 para contas AWS Free Plan."
+  type        = number
+  default     = 1
+}
+
 variable "budget_email" {
   type      = string
   default   = null
