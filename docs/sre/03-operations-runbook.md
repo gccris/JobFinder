@@ -46,7 +46,7 @@ O circuit breaker do ECS reverte tasks que não estabilizam. Migration destrutiv
 
 ## Restore
 
-1. Restaure o Aurora para um novo cluster a partir do ponto desejado.
+1. Restaure o RDS PostgreSQL para uma nova instancia a partir do ponto desejado.
 2. Crie um secret temporário de `DATABASE_URL` apontando para o cluster restaurado.
 3. Suba staging contra esse secret e execute migrations e smoke tests.
 4. Meça desde o início do incidente até a validação; deve ser menor que 2 horas.
@@ -54,4 +54,4 @@ O circuit breaker do ECS reverte tasks que não estabilizam. Migration destrutiv
 
 ## Encerramento e custo
 
-Após o sleep, confirme ausência de ALB, ECS tasks, Redis e IPv4 do data plane. Aurora, buckets, ECR, secrets, DynamoDB e logs permanecem por projeto. Nunca destrua `shared` como forma de desligar o ambiente.
+Após o sleep, confirme ausência de ALB, ECS tasks, Redis e IPv4 do data plane. PostgreSQL, buckets, ECR, secrets, DynamoDB e logs permanecem por projeto. Nunca destrua `shared` como forma de desligar o ambiente.

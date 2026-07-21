@@ -25,7 +25,7 @@ O sistema é uma aplicação web que consulta APIs de empresas e plataformas de 
 
 - Dados armazenados: usuários, autenticação e sessões, vagas, empresas/fontes cadastradas, vagas salvas, candidaturas e histórico das sincronizações.
 - Quem acessa: aplicação Next.js e worker BullMQ.
-- Estratégia de backup: backups automatizados do Aurora com retenção de 7 dias e snapshot final protegido no state `shared`. O teste de restore continua sendo uma atividade operacional obrigatória.
+- Estratégia de backup: backups automatizados do PostgreSQL com retenção configurável e snapshot final protegido no state `shared`. O teste de restore continua sendo uma atividade operacional obrigatória.
 
 ### Redis
 

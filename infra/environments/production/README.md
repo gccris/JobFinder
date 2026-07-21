@@ -10,6 +10,6 @@ Este root implementa o data plane efêmero:
 - rolling deployment e rollback por digest;
 - outputs exigidos por `infra/README.md`.
 
-O Aurora fica no state `shared` e não pode ser destruído pelo auto-sleep.
+O PostgreSQL fica no state `shared` e não pode ser destruído pelo auto-sleep.
 
 Ele é empacotado pelo workflow `Release` com uma imagem identificada por digest. O CodeBuild sobe os serviços inicialmente em zero, executa `prisma migrate deploy` numa task isolada e então escala app e worker.

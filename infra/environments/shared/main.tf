@@ -116,41 +116,31 @@ resource "aws_db_subnet_group" "this" {
   tags       = local.common_tags
 }
 
-resource "aws_rds_cluster" "this" {
-  cluster_identifier              = "${var.name_prefix}-aurora"
-  engine                          = "aurora-postgresql"
-  engine_version                  = var.aurora_engine_version
-  database_name                   = var.database_name
-  master_username                 = var.database_master_username
+resource "aws_db_instance" "this" {
+  identifier                      = "${var.name_prefix}-postgres"
+  engine                          = "postgres"
+  engine_version                  = var.postgres_engine_version
+  instance_class                  = var.database_instance_class
+  allocated_storage               = var.database_allocated_storage
+  db_name                         = var.database_name
+  username                        = var.database_master_username
   manage_master_user_password     = true
   db_subnet_group_name            = aws_db_subnet_group.this.name
   vpc_security_group_ids          = [aws_security_group.database.id]
   storage_encrypted               = true
   kms_key_id                      = aws_kms_key.shared.arn
   backup_retention_period         = var.database_backup_retention_days
-  preferred_backup_window         = "05:00-06:00"
+  backup_window                   = "05:00-06:00"
   deletion_protection             = true
   copy_tags_to_snapshot           = true
   skip_final_snapshot             = false
-  final_snapshot_identifier       = "${var.name_prefix}-aurora-final"
-  enabled_cloudwatch_logs_exports = ["postgresql"]
-
-  serverlessv2_scaling_configuration {
-    min_capacity             = 0
-    max_capacity             = 1
-    seconds_until_auto_pause = 900
-  }
+  final_snapshot_identifier       = "${var.name_prefix}-postgres-final"
+  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
+  publicly_accessible             = false
+  multi_az                        = false
+  performance_insights_enabled    = false
 
   tags = local.common_tags
-}
-
-resource "aws_rds_cluster_instance" "writer" {
-  identifier         = "${var.name_prefix}-aurora-writer"
-  cluster_identifier = aws_rds_cluster.this.id
-  instance_class     = "db.serverless"
-  engine             = aws_rds_cluster.this.engine
-  engine_version     = aws_rds_cluster.this.engine_version
-  tags               = local.common_tags
 }
 
 resource "aws_ecr_repository" "app" {

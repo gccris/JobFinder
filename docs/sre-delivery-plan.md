@@ -23,7 +23,7 @@ API Gateway ── Lambda Authorizer
   ├── ambiente dormindo ── Lambda/CodeBuild/Terraform
   │
   └── ambiente pronto ── VPC Link ── ALB interno
-                                      ├── ECS app ──── Aurora PostgreSQL
+                                      ├── ECS app ──── RDS PostgreSQL
                                       └── ECS worker ─ ElastiCache/BullMQ
 ```
 
@@ -106,7 +106,7 @@ Rollback usa a task definition/digest anterior. Migrations seguem expand/contrac
 ### 6. Operação e confiabilidade
 
 - Logs com retenção econômica, métricas e alarmes SNS.
-- Queue depth/age, ECS task stops, ALB 5xx/latência, Aurora e Redis.
+- Queue depth/age, ECS task stops, ALB 5xx/latência, PostgreSQL e Redis.
 - Backup PostgreSQL no S3 e snapshot pré-release.
 - Teste periódico de restore dentro do RTO.
 - Game days: task encerrada, worker indisponível, release ruim e dependência lenta.
@@ -132,7 +132,7 @@ Sleep:
 3. Uma task executa `npm run ops:can-sleep`.
 4. Jobs BullMQ ou `SyncRun` ativos adiam o desligamento.
 5. API Gateway volta ao modo wake antes do destroy.
-6. ECS, ALB e ElastiCache são removidos; Aurora entra em auto-pause.
+6. ECS, ALB e ElastiCache são removidos; o PostgreSQL persistente continua ativo no state `shared`.
 
 ## Critérios de aceitação
 
@@ -153,7 +153,7 @@ Sleep:
 - CI com migrations, lint, testes, cobertura, build, imagem e scans.
 - Release com OIDC, ECR, digest imutável, staging e aprovação de produção.
 - States Terraform separados para bootstrap, shared, staging, control plane e data plane.
-- Aurora persistente, Redis efêmero com TLS, ECS/ALB, Secrets Manager, budgets, logs e alarmes.
+- PostgreSQL persistente, Redis efêmero com TLS, ECS/ALB, Secrets Manager, budgets, logs e alarmes.
 - Tutorial AWS e runbooks de release, rollback, incidentes e restore.
 
 ## Próximos conteúdos SRE
@@ -170,5 +170,5 @@ Sleep:
 
 - Região `us-east-1`; auto-sleep após 60 minutos.
 - O Free Plan termina em até seis meses ou ao consumir os créditos.
-- Aurora pausa compute em `0 ACU`, mas armazenamento/backups continuam cobrando.
+- PostgreSQL persistente continua cobrando enquanto existir; acompanhe budgets e remova `shared` ao fim do laboratorio se nao for mais usar.
 - Antes de aplicar, confirme os valores na calculadora oficial da AWS.

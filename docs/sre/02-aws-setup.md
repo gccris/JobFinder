@@ -32,11 +32,11 @@ cd ../production-control
 terraform init -backend-config="bucket=SEU_BUCKET" -backend-config="key=production/control.tfstate" -backend-config="region=us-east-1" -backend-config="use_lockfile=true"
 ```
 
-O state `shared` contém VPC, ECR, Aurora, buckets, roles e secrets e não participa do auto-sleep. Os control planes de staging e produção contêm API Gateway, Lambdas, DynamoDB e CodeBuild. O data plane criado sob demanda contém ALB, ECS e Redis.
+O state `shared` contém VPC, ECR, RDS PostgreSQL, buckets, roles e secrets e não participa do auto-sleep. Os control planes de staging e produção contêm API Gateway, Lambdas, DynamoDB e CodeBuild. O data plane criado sob demanda contém ALB, ECS e Redis.
 
 ## Secrets
 
-O Terraform não grava valores da aplicação. Depois do state `shared`, preencha cada secret no console ou CloudShell. Para o banco, recupere a senha do secret gerenciado pelo Aurora e grave a URL completa no secret `jobhub/ENVIRONMENT/database-url`:
+O Terraform não grava valores da aplicação. Depois do state `shared`, preencha cada secret no console ou CloudShell. Para o banco, recupere a senha do secret gerenciado pelo RDS e grave a URL completa no secret `jobhub/ENVIRONMENT/database-url`:
 
 ```text
 postgresql://jobadmin:SENHA@ENDPOINT:5432/job_aggregator?sslmode=require&connection_limit=8&pool_timeout=10

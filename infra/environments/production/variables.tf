@@ -102,7 +102,7 @@ variable "nextauth_url" {
 }
 
 variable "database_security_group_id" {
-  description = "Security group do Aurora persistente criado no state shared."
+  description = "Security group do PostgreSQL persistente criado no state shared."
   type        = string
 }
 

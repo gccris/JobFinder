@@ -22,9 +22,21 @@ variable "vpc_cidr" {
   default = "10.40.0.0/16"
 }
 
-variable "aurora_engine_version" {
+variable "postgres_engine_version" {
   type    = string
   default = "16.3"
+}
+
+variable "database_instance_class" {
+  description = "Classe pequena para laboratorio em conta AWS Free Plan."
+  type        = string
+  default     = "db.t4g.micro"
+}
+
+variable "database_allocated_storage" {
+  description = "Armazenamento inicial em GiB para PostgreSQL."
+  type        = number
+  default     = 20
 }
 
 variable "database_name" {
@@ -38,7 +50,7 @@ variable "database_master_username" {
 }
 
 variable "database_backup_retention_days" {
-  description = "Dias de retencao de backup do Aurora. Use 1 para contas AWS Free Plan."
+  description = "Dias de retencao de backup do PostgreSQL. Use 1 para contas AWS Free Plan."
   type        = number
   default     = 1
 }
