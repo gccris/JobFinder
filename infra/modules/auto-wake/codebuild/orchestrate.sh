@@ -186,7 +186,7 @@ finish_sleep() {
       --expression-attribute-names '{"#state":"state"}' \
       --expression-attribute-values "{\":state\":{\"S\":\"WAKING\"},\":updatedAt\":{\"S\":\"$(date -u +%FT%TZ)\"}}" >/dev/null
     aws codebuild start-build \
-      --project-name "$CODEBUILD_PROJECT_NAME" \
+      --project-name "$AUTO_WAKE_CODEBUILD_PROJECT_NAME" \
       --environment-variables-override name=ACTION,value=WAKE,type=PLAINTEXT >/dev/null
   else
     aws dynamodb update-item \

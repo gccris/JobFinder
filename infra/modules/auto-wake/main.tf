@@ -435,7 +435,7 @@ resource "aws_codebuild_project" "orchestrator" {
       value = var.artifact_key
     }
     environment_variable {
-      name  = "CODEBUILD_PROJECT_NAME"
+      name  = "AUTO_WAKE_CODEBUILD_PROJECT_NAME"
       value = local.codebuild_project_name
     }
     environment_variable {
